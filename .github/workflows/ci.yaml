@@ -12,7 +12,8 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python }}
-      - run: python install.py
-      - run: pytest -q
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -e ".[dev]" pytest
+      - run: python -m pytest -q
       - name: template passes its own audit
         run: prestige audit references/premium-template.html --strict
