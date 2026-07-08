@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prestige — Conversion-Optimized Starter</title>
+  <style>
+    :root{
+      --ink:#0f1720; --paper:#fff; --trust:#1d4ed8; --accent:#f59e0b;
+      --muted:#5b6572; --line:#e6e9ee; --radius:14px;
+      --font:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    }
+    *{box-sizing:border-box} html{scroll-behavior:smooth}
+    body{margin:0;font-family:var(--font);color:var(--ink);line-height:1.7;background:var(--paper)}
+    .wrap{max-width:1120px;margin:0 auto;padding:0 6vw}
+    nav{display:flex;align-items:center;justify-content:space-between;padding:1.5rem 6vw}
+    nav .links{display:flex;gap:2rem}
+    nav a{color:var(--ink);text-decoration:none;transition:color .3s ease}
+    nav a:hover{color:var(--trust)}
+    /* ONE primary CTA style, isolated by the accent color (Von Restorff) */
+    .btn-primary{background:var(--accent);color:#1a1205;border:none;border-radius:var(--radius);
+         padding:1rem 1.8rem;font-size:1.05rem;font-weight:700;cursor:pointer;
+         transition:all .3s ease;box-shadow:0 4px 14px rgba(245,158,11,.35)}
+    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(245,158,11,.45)}
+    .btn-secondary{background:transparent;color:var(--trust);border:none;font-weight:600;cursor:pointer;text-decoration:underline}
+    .hero{display:grid;gap:1.4rem;padding:8vw 0;text-align:center}
+    .hero h1{font-size:clamp(2.3rem,5vw,3.7rem);line-height:1.12;margin:0;max-width:20ch;margin-inline:auto}
+    .hero p{color:var(--muted);font-size:1.2rem;max-width:46ch;margin:0 auto}
+    .hero-media{height:340px;border-radius:20px;overflow:hidden;margin-top:1rem}
+    .hero-media img{width:100%;height:100%;object-fit:cover;display:block}
+    .reassure{color:var(--muted);font-size:.9rem}
+    section{padding:8rem 0}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem}
+    .card{border:1px solid var(--line);border-radius:var(--radius);padding:2rem;transition:all .3s ease}
+    .card:hover{transform:translateY(-4px);box-shadow:0 12px 30px rgba(15,23,32,.08)}
+    .trust-row{display:flex;gap:1.5rem;justify-content:center;align-items:center;color:var(--muted);flex-wrap:wrap}
+    .badge{display:inline-flex;gap:.5rem;align-items:center;border:1px solid var(--line);padding:.5rem 1rem;border-radius:999px}
+    .stars{color:var(--accent)}
+    .pricing{text-align:center}
+    .price-anchor{color:var(--muted);text-decoration:line-through;font-size:1.1rem}
+    .price-now{font-size:2.5rem;font-weight:800}
+    .scarcity{color:#b91c1c;font-weight:600;font-size:.95rem}
+    form{max-width:440px;margin:0 auto;display:grid;gap:1.25rem}
+    input{padding:1rem;border:1.5px solid var(--line);border-radius:var(--radius);font-size:1rem;
+          transition:border-color .3s ease,box-shadow .3s ease}
+    input:focus{outline:none;border-color:var(--trust);box-shadow:0 0 0 4px rgba(29,78,216,.12)}
+    input:valid{border-color:#16a34a}
+    input:invalid:not(:placeholder-shown){border-color:#dc2626}
+    .price-line{display:flex;justify-content:space-between;color:var(--muted);font-size:.95rem}
+    .price-line strong{color:var(--ink)}
+    footer{border-top:1px solid var(--line);padding:3rem 6vw;color:var(--muted);display:flex;gap:2rem;justify-content:space-between;flex-wrap:wrap}
+    @media (max-width:768px){
+      nav{flex-direction:column;gap:1rem}
+      .grid{grid-template-columns:1fr}
+      section{padding:4rem 0}
+      .hero{padding:12vw 0}
+      body{font-size:16px}
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <strong>Prestige</strong>
+    <div class="links"><a href="#features">Features</a><a href="#pricing">Pricing</a><a href="#proof">Reviews</a></div>
+    <button class="btn-primary">Start my free trial</button>
+  </nav>
+
+  <header class="wrap hero">
+    <h1>You'll earn a customer's trust in 50 milliseconds. Make them count.</h1>
+    <p>The proven design system that turns first impressions into paying customers — free to start, no credit card.</p>
+    <button class="btn-primary">Get my free audit now</button>
+    <p class="reassure">🔒 Secure &amp; verified · Join 12,000+ founders · No credit card required</p>
+    <div class="hero-media">
+      <img src="https://images.unsplash.com/photo-1497366216548" alt="Bright modern workspace conveying a calm, premium, trustworthy brand">
+    </div>
+  </header>
+
+  <section id="proof" class="wrap">
+    <div class="trust-row">
+      <span class="badge">🔒 Secure checkout</span>
+      <span class="badge">✓ Verified business</span>
+      <span class="badge"><span class="stars">★★★★★</span> from 12,400+ reviews</span>
+      <span class="badge">Trusted by 12,000+ founders</span>
+    </div>
+  </section>
+
+  <section id="features" class="wrap">
+    <div class="grid">
+      <div class="card"><h3>Clean</h3><p>Extreme whitespace signals a brand too confident to shout.</p></div>
+      <div class="card"><h3>Trusted</h3><p>Security and proof placed exactly where you hesitate.</p></div>
+      <div class="card"><h3>Alive</h3><p>Micro-interactions create the peaks you remember.</p></div>
+    </div>
+  </section>
+
+  <section id="pricing" class="wrap pricing">
+    <p class="price-anchor">Was $199/mo</p>
+    <p class="price-now">$99<span style="font-size:1rem;color:var(--muted)">/mo</span></p>
+    <p class="scarcity">⏳ Launch pricing — only 40 seats left at this rate</p>
+    <form>
+      <input type="email" placeholder="you@company.com" required aria-label="Email address">
+      <div class="price-line"><span>Total today (incl. all fees &amp; tax)</span><strong>$99.00</strong></div>
+      <button class="btn-primary" type="submit">Claim my launch price</button>
+      <p class="reassure" style="text-align:center">🔒 Encrypted &amp; verified · 30-day money-back guarantee · guest checkout</p>
+    </form>
+    <p><button class="btn-secondary">Maybe later</button></p>
+  </section>
+
+  <footer>
+    <span>© 2026 Prestige Inc.</span>
+    <span>Contact · FAQ · Refund policy · Terms</span>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,108 @@
+# The Digital Architect of Prestige 💎
+
+A **coding-agent skill** for designing premium, high-conversion websites and
+mobile UIs — for Claude Code, Codex, OpenCode, Cursor, and any agent that reads
+a project skill file. It moves the agent beyond aesthetics into **applied
+psychology and trust engineering**, and ships an **executable design linter** so
+the agent can *verify* its output against the principles, not just intend them.
+
+> Users judge credibility in ~50ms from visuals alone. If it looks
+> professional, they assume the service is too (the Halo Effect). This skill
+> engineers that halo — and refuses to let a pretty page ship over a broken one.
+
+## Workflow at a glance
+
+```mermaid
+flowchart LR
+    A["User journey or page brief"] --> B["Select design workflow"]
+    B --> C["Build premium UI"]
+    C --> D["Audit five design laws"]
+    D --> E["Bias, CTA, hook, and mobile checks"]
+    E -->|"fails"| F["Fix ranked recommendations"]
+    F --> D
+    E -->|"passes"| G["Ship UI with design receipt"]
+```
+
+## Install into your agent (any OS)
+
+```bash
+python install.py                 # Windows / macOS / Linux (installs + verifies)
+# then, inside your project:
+prestige install claude           # or: codex · opencode · cursor · generic
+```
+That drops `SKILL.md` where your agent auto-reads it. From then on, any
+"design a landing page / make this premium / build a checkout" request triggers
+the skill.
+
+## What the agent gets
+
+**A design contract (`SKILL.md`)** encoding five laws it applies every time:
+
+1. **The 50ms Halo** — hero section, one bold headline, high-fidelity cover imagery.
+2. **Cognitive Fluency** — Hick's/Miller's Law, extreme whitespace, one goal per section, `line-height ≥ 1.6`.
+3. **Trust Engineering** — security + social-proof cues at decision points, total price incl. fees upfront, guest checkout.
+4. **Peak-End Rule** — micro-interactions at the peaks, inline form validation, a rewarding confirmation ending.
+5. **Horn-Effect Defense** — one Visual DNA in CSS variables, mobile-first stability, no dated cues.
+
+**An executable linter (`prestige audit`)** that scores generated HTML/CSS on all
+five laws and **hard-fails on major functional flaws** — because the skill's one
+non-negotiable rule is *never let aesthetics mask a broken primary action or an
+inaccessible UI.*
+
+```bash
+prestige scaffold site.html        # premium starter (scores 100/100)
+prestige audit site.html           # score the five laws + catch Horn-Effect triggers
+prestige audit site.html --strict  # exit 1 if failing — use as an agent/CI gate
+```
+
+Example on a deliberately clunky page:
+```
+Overall: 18/100   Verdict: NEEDS WORK
+halo:15  fluency:20  trust:20  peak:20  horn:15
+⛔ HARD FAILURES (fix before shipping — function over aesthetics):
+   MAJOR_FLAW: primary action button has no accessible label/text.
+   ✗ [trust] T_NO_SECURITY: Transactional UI with no security cue near actions.
+   ✗ [horn]  C_NO_VIEWPORT: Missing viewport meta — mobile layout will break.
+```
+
+## The workflow the skill teaches
+
+`Discovery` (audit the journey for trust gaps) → `Build` (apply the five laws)
+→ `Verify` (`prestige audit`, fix flags, then present). The agent treats a
+failing audit like a failing test — which is exactly how "premium" stops being
+a vibe and becomes a checkable property.
+
+## The psychology, sourced
+Halo Effect & the 50ms window · Aesthetic-Usability Effect · Hick's & Miller's
+Law · Fitts's Law · Peak-End Rule · Negativity/Horn Effect. Detailed playbooks
+in `references/` (hero-halo, cognitive-fluency, trust-engineering, peak-end).
+
+## v0.2 — deeper psychology, stricter scoring, five workflows
+
+- **Cognitive Bias Engine** — six research-backed biases (Von Restorff, Anchoring,
+  Social Proof, Loss Aversion, Reciprocity, Cognitive Fluency) with detectors,
+  quality scoring, and precise recommendations.
+- **CTA & Hook Verification** — scores whether your call-to-action and headline
+  are engineered to convert (weak-verb detection, reader-focus, power words,
+  CTA-competition penalty) with exact rewrites.
+- **Strict Mobile Judge** — thumb-reach tap targets, viewport discipline, real
+  breakpoints, legible base text, sticky-CTA guidance — because trust breaks on
+  mobile first.
+- **Five Design-Principle Workflows** — Conversion Architect, Luxury Minimalist,
+  Trust Engineer, Editorial Storyteller, Product-Led Pragmatist. Each is a
+  distinct optimization strategy that re-weights the score.
+- **Precision Scoring** — `prestige score <file> --workflow <key>` fuses laws +
+  biases + CTA/hooks + mobile into a 0–100 conversion-readiness grade with
+  **recommendations ranked by conversion impact**.
+
+```bash
+prestige workflows                          # see the five lenses
+prestige score site.html --workflow trust   # precise score + ranked fixes
+prestige score site.html --strict           # exit 1 if not conversion-ready
+```
+
+Grounded in current research: credibility forms in ~0.05s (Google), trigger-driven
+UX lifts conversion ~34% on average (Nielsen Norman 2024).
+
+## License
+Dual-licensed **Apache-2.0 OR MIT** — pick whichever your project prefers.
