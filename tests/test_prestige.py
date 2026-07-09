@@ -173,3 +173,13 @@ def test_precision_hard_fails_on_broken_function():
                          '<button class="btn-primary" type="submit"></button>')
     r = score_design(broken, workflow_key="conversion")
     assert not r.passed  # aesthetics never mask a major functional flaw
+def test_design_audit_emits_per_criterion_attribution():
+    from prestige_design.audit import audit_html
+    report = audit_html("<html><head></head><body><h1>Test</h1></body></html>")
+    attr = report.attribution
+    assert attr.n_checked == len(report.scores) == 5
+    assert {unit.unit for unit in attr.units} == {
+        "criterion:fluency", "criterion:halo", "criterion:horn",
+        "criterion:peak", "criterion:trust",
+    }
+    assert attr.rate == attr.n_passed / attr.n_checked

@@ -27,6 +27,21 @@ class AuditReport:
     def overall(self) -> int:
         return round(sum(self.scores.values()) / len(self.scores)) if self.scores else 0
 
+    @property
+    def attribution(self):
+        from .attribution import Attribution, FailureClass, UnitResult
+        units = [
+            UnitResult(
+                unit=f"criterion:{law}",
+                stage="design_audit",
+                passed=score >= 60,
+                evidence=f"score={score}; threshold=60",
+                failure_class=None if score >= 60 else FailureClass.WRONG_OUTPUT,
+            )
+            for law, score in sorted(self.scores.items())
+        ]
+        return Attribution("design_audit", len(units), sum(unit.passed for unit in units), units)
+
 def _has(pattern, text, flags=re.I):
     return re.search(pattern, text, flags) is not None
 
