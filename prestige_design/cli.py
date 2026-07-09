@@ -25,6 +25,7 @@ def _fmt(report, path, as_json):
                 "overall": report.overall,
                 "passed": report.passed,
                 "scores": report.scores,
+                "attribution": report.attribution.to_dict(),
                 "hard_failures": report.hard_failures,
                 "findings": [f.__dict__ for f in report.findings],
             },

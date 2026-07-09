@@ -183,3 +183,13 @@ def test_design_audit_emits_per_criterion_attribution():
         "criterion:peak", "criterion:trust",
     }
     assert attr.rate == attr.n_passed / attr.n_checked
+
+
+def test_cli_json_exposes_attribution(tmp_path, capsys):
+    from prestige_design.cli import main
+    page = tmp_path / "page.html"
+    page.write_text("<html><head></head><body><h1>Test</h1></body></html>")
+    main(["audit", str(page), "--json"])
+    import json
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["attribution"]["n_checked"] == 5

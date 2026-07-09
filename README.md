@@ -106,3 +106,8 @@ UX lifts conversion ~34% on average (Nielsen Norman 2024).
 
 ## License
 Dual-licensed **Apache-2.0 OR MIT** — pick whichever your project prefers.
+## Criterion attribution
+
+Prestige 0.2.1 wraps its existing five per-law scores in the factory attribution
+envelope. Run `prestige audit page.html --json` to receive one unit per design
+criterion, its score and threshold, and the unchanged overall verdict.
