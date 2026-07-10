@@ -8,6 +8,7 @@ from .audit import audit_html
 from .biases import run_bias_suite
 from .cta_hooks import verify_cta_and_hooks
 from .mobile_judge import judge_mobile
+from .purpose import audit_purpose
 from .workflows import get_workflow
 
 @dataclass
@@ -20,6 +21,8 @@ class PrecisionReport:
     cta_score: int = 0
     hook_score: int = 0
     mobile_score: int = 0
+    purpose_score: int | None = None
+    purpose: str = ""
     primary_cta: str = ""
     hook: str = ""
     hard_failures: list = field(default_factory=list)
@@ -34,7 +37,12 @@ def _extract_css(html: str, css_extra: str) -> str:
     inline = " ".join(re.findall(r"<style[^>]*>(.*?)</style>", html, re.S | re.I))
     return css_extra + "\n" + inline
 
-def score_design(html: str, css_extra: str = "", workflow_key: str = "conversion") -> PrecisionReport:
+def score_design(
+    html: str,
+    css_extra: str = "",
+    workflow_key: str = "conversion",
+    purpose_key: str | None = None,
+) -> PrecisionReport:
     css = _extract_css(html, css_extra)
     wf = get_workflow(workflow_key)
     r = PrecisionReport(workflow=wf.name)
@@ -57,6 +65,11 @@ def score_design(html: str, css_extra: str = "", workflow_key: str = "conversion
     mob = judge_mobile(html, css)
     r.mobile_score = mob.score
 
+    purpose = audit_purpose(html, css, purpose_key or "auto") if purpose_key is not None else None
+    if purpose is not None:
+        r.purpose_score = purpose.score
+        r.purpose = purpose.profile
+
     # ---- workflow-weighted composite ----
     # base channels with default weights
     channels = {
@@ -65,6 +78,8 @@ def score_design(html: str, css_extra: str = "", workflow_key: str = "conversion
         "horn": law.scores.get("horn", 0), "cta": ch.cta_score, "hook": ch.hook_score,
         "mobile": mob.score,
     }
+    if purpose is not None:
+        channels["purpose"] = purpose.score
     # fold bias quality into their related channels
     bias_map = {"Von Restorff (CTA isolation)": "cta", "Social Proof": "social_proof",
                 "Cognitive Fluency": "fluency", "Anchoring (price)": "anchoring",
@@ -93,6 +108,9 @@ def score_design(html: str, css_extra: str = "", workflow_key: str = "conversion
         recs.append((18, f"[CTA/Hook] {rec}"))
     for rec in mob.recommendations:
         recs.append((14, f"[Mobile] {rec}"))
+    if purpose is not None:
+        for rec in purpose.recommendations:
+            recs.append((17, f"[Purpose Fit] {rec}"))
     # law-level gaps
     law_recs = {"halo":"Strengthen the hero — bold single headline + high-res cover image (50ms halo).",
                 "trust":"Add security + social-proof cues at decision points.",

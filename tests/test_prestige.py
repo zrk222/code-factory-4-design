@@ -88,6 +88,7 @@ from prestige_design.cta_hooks import verify_cta_and_hooks
 from prestige_design.mobile_judge import judge_mobile
 from prestige_design.score import score_design
 from prestige_design.workflows import get_workflow, list_workflows
+from prestige_design.purpose import audit_purpose, infer_purpose, list_purposes
 
 OPT = (ROOT/"references"/"premium-template.html").read_text(encoding="utf-8")
 
@@ -173,6 +174,85 @@ def test_precision_hard_fails_on_broken_function():
                          '<button class="btn-primary" type="submit"></button>')
     r = score_design(broken, workflow_key="conversion")
     assert not r.passed  # aesthetics never mask a major functional flaw
+
+
+# ============ v0.3: purpose-fit psychology and theme judgment ============
+DEV_GOOD = """<!doctype html><html><head><meta name="viewport" content="width=device-width"><style>
+:root{--ink:#111827;--accent:#2563eb} body{font-family:Inter,sans-serif;line-height:1.7;color:var(--ink)}
+.hero{padding:6rem 8vw;background:#f8fafc}.terminal{font-family:ui-monospace,monospace;background:#111827;color:white}
+.btn-primary{background:var(--accent);padding:1rem 1.2rem}@media(max-width:768px){.hero{padding:4rem 6vw}}
+</style></head><body><section class="hero"><h1>Ship your API workflow with deterministic CI receipts</h1>
+<p>Open source CLI with GitHub Actions, docs, quickstart, and no secrets.</p>
+<pre class="terminal"><code>pip install code-factory-2-forge\nforge demo</code></pre>
+<a class="btn-primary">Install from GitHub</a><a>View docs</a></section></body></html>"""
+
+DEV_BAD = """<!doctype html><html><head><style>.hero{color:purple}</style></head>
+<body><h1>Revolutionary effortless AI magic for everyone</h1><button>Contact sales</button></body></html>"""
+
+LUXURY_BAD = """<!doctype html><html><head><style>:root{--x:red}.sale{color:red}</style></head>
+<body><h1>Cheap flash sale hurry buy now</h1><button>Buy now</button><button>Submit</button>
+<button>Free discount</button><p>Last chance discount cheap offer.</p></body></html>"""
+
+
+def test_purpose_lenses_are_listed():
+    keys = {item["key"] for item in list_purposes()}
+    assert {"developer", "healthcare", "fintech", "luxury", "marketplace", "saas", "editorial"} <= keys
+
+
+def test_purpose_inference_detects_developer_tool():
+    assert infer_purpose(DEV_GOOD, "") == "developer"
+
+
+def test_developer_purpose_fit_passes_concrete_product_proof():
+    r = audit_purpose(DEV_GOOD, purpose="developer")
+    assert r.passed
+    assert r.score >= 80
+    assert r.attribution.n_checked == 5
+
+
+def test_developer_purpose_fit_flags_vague_marketing():
+    r = audit_purpose(DEV_BAD, purpose="developer")
+    assert not r.passed
+    assert r.score < 70
+    assert any("code" in rec.lower() or "docs" in rec.lower() for rec in r.recommendations)
+
+
+def test_luxury_purpose_fit_rejects_loud_discount_language():
+    r = audit_purpose(LUXURY_BAD, purpose="luxury")
+    assert not r.passed
+    anti = next(f for f in r.findings if f.criterion == "anti_patterns")
+    assert anti.score < 70
+
+
+def test_precision_score_can_include_purpose_channel():
+    r = score_design(DEV_GOOD, workflow_key="product", purpose_key="developer")
+    assert r.purpose_score is not None
+    assert r.purpose == "Developer Tool Clarity"
+    assert "purpose" in r.__dict__
+
+
+def test_cli_purpose_json_exposes_attribution(tmp_path, capsys):
+    from prestige_design.cli import main
+    page = tmp_path / "dev.html"
+    page.write_text(DEV_GOOD)
+    main(["purpose", str(page), "--purpose", "developer", "--json"])
+    import json
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["profile"] == "Developer Tool Clarity"
+    assert payload["attribution"]["stage"] == "purpose_fit"
+
+
+def test_cli_score_json_includes_purpose_when_requested(tmp_path, capsys):
+    from prestige_design.cli import main
+    page = tmp_path / "dev.html"
+    page.write_text(DEV_GOOD)
+    main(["score", str(page), "--workflow", "product", "--purpose", "developer", "--json"])
+    import json
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["purpose"] == "Developer Tool Clarity"
+    assert payload["purpose_score"] >= 70
+
+
 def test_design_audit_emits_per_criterion_attribution():
     from prestige_design.audit import audit_html
     report = audit_html("<html><head></head><body><h1>Test</h1></body></html>")

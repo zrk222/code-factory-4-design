@@ -71,11 +71,22 @@ def main(argv=None):
     score.add_argument("file")
     score.add_argument("--css", default=None)
     score.add_argument("--workflow", default="conversion", choices=["conversion", "luxury", "trust", "editorial", "product"])
+    score.add_argument("--purpose", default=None, help="purpose-fit lens: auto, developer, healthcare, fintech, luxury, marketplace, saas, editorial")
     score.add_argument("--json", action="store_true")
     score.add_argument("--strict", action="store_true")
 
     workflows = sub.add_parser("workflows", help="list the five design-principle workflows")
     workflows.add_argument("--json", action="store_true")
+
+    purposes = sub.add_parser("purposes", help="list purpose-fit design lenses")
+    purposes.add_argument("--json", action="store_true")
+
+    purpose_cmd = sub.add_parser("purpose", help="audit whether design choices fit the interface purpose")
+    purpose_cmd.add_argument("file")
+    purpose_cmd.add_argument("--css", default=None)
+    purpose_cmd.add_argument("--purpose", default="auto", help="auto, developer, healthcare, fintech, luxury, marketplace, saas, editorial")
+    purpose_cmd.add_argument("--json", action="store_true")
+    purpose_cmd.add_argument("--strict", action="store_true")
 
     scaffold = sub.add_parser("scaffold", help="write a premium starter template")
     scaffold.add_argument("out", nargs="?", default="premium-template.html")
@@ -102,12 +113,65 @@ def main(argv=None):
                 _print(f"  {C['d']}signature move: {workflow['signature_move']}{C['x']}\n")
         return
 
+    if args.cmd == "purposes":
+        from .purpose import list_purposes
+
+        data = list_purposes()
+        if args.json:
+            print(json.dumps(data, indent=2))
+        else:
+            C = {"c": "\033[96m", "b": "\033[1m", "d": "\033[2m", "x": "\033[0m"}
+            _print(f"\n{C['b']}Purpose-Fit Design Lenses{C['x']}\n")
+            for item in data:
+                _print(f"{C['c']}{item['name']}{C['x']}  {C['d']}(--purpose {item['key']}){C['x']}")
+                _print(f"  {item['psychology']}")
+                _print(f"  {C['d']}{item['directives'][0]}{C['x']}\n")
+        return
+
+    if args.cmd == "purpose":
+        from .purpose import audit_purpose
+
+        html = Path(args.file).read_text(encoding="utf-8")
+        css = Path(args.css).read_text(encoding="utf-8") if args.css else ""
+        rep = audit_purpose(html, css, args.purpose)
+        if args.json:
+            print(
+                json.dumps(
+                    {
+                        "purpose": rep.purpose,
+                        "profile": rep.profile,
+                        "score": rep.score,
+                        "grade": rep.grade,
+                        "passed": rep.passed,
+                        "findings": [f.__dict__ for f in rep.findings],
+                        "recommendations": rep.recommendations,
+                        "attribution": rep.attribution.to_dict(),
+                    },
+                    indent=2,
+                )
+            )
+        else:
+            C = {"g": "\033[92m", "r": "\033[91m", "c": "\033[96m", "d": "\033[2m", "b": "\033[1m", "x": "\033[0m"}
+            verdict = f"{C['g']}PASS{C['x']}" if rep.passed else f"{C['r']}NEEDS WORK{C['x']}"
+            _print(f"\n{C['c']}Purpose fit - {args.file}{C['x']}")
+            _print(f"{C['d']}profile: {rep.profile}{C['x']}")
+            _print(f"{C['b']}Purpose score: {rep.score}/100  (grade {rep.grade})  {verdict}{C['x']}")
+            for finding in rep.findings:
+                _print(f"  {finding.criterion}: {finding.score}/100 - {finding.message}")
+            if rep.recommendations:
+                _print(f"\n{C['b']}Purpose recommendations:{C['x']}")
+                for i, rec in enumerate(rep.recommendations[:8], 1):
+                    _print(f"  {i}. {rec}")
+        if args.strict and not rep.passed:
+            sys.exit(1)
+        return
+
     if args.cmd == "score":
         from .score import score_design
 
         html = Path(args.file).read_text(encoding="utf-8")
         css = Path(args.css).read_text(encoding="utf-8") if args.css else ""
-        rep = score_design(html, css, args.workflow)
+        rep = score_design(html, css, args.workflow, args.purpose)
         if args.json:
             print(
                 json.dumps(
@@ -121,6 +185,8 @@ def main(argv=None):
                         "cta_score": rep.cta_score,
                         "hook_score": rep.hook_score,
                         "mobile_score": rep.mobile_score,
+                        "purpose_score": rep.purpose_score,
+                        "purpose": rep.purpose,
                         "primary_cta": rep.primary_cta,
                         "hook": rep.hook,
                         "hard_failures": rep.hard_failures,
@@ -137,6 +203,7 @@ def main(argv=None):
             _print(f"{C['b']}Conversion readiness: {rep.conversion_score}/100  (grade {rep.grade})  {verdict}{C['x']}")
             _print(
                 f"{C['d']}CTA:{rep.cta_score}  Hook:{rep.hook_score}  Mobile:{rep.mobile_score}  "
+                + (f"Purpose:{rep.purpose_score}  " if rep.purpose_score is not None else "")
                 + "  ".join(f"{k}:{v}" for k, v in rep.law_scores.items())
                 + C["x"]
             )

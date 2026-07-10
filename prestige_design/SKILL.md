@@ -31,6 +31,10 @@ inverse (the Horn Effect).
 3. **Verify** — run `prestige audit <file.html>` on your output. It scores the
    five laws and flags Horn-Effect triggers. Fix anything it flags before
    presenting the result. Treat a failing audit like a failing test.
+4. **Purpose-fit** — when the domain matters, run `prestige purpose <file.html>
+   --purpose <key>` or include `--purpose <key>` in `prestige score`. Workflows
+   decide what the page optimizes for; purpose lenses decide whether the visual
+   strategy fits the audience psychology and job.
 
 ## The Five Laws (apply every time)
 
@@ -152,6 +156,24 @@ and suggests a sticky bottom CTA to keep the primary action in the thumb zone.
 mobile judge, weighted by the chosen workflow — plus **recommendations ranked
 by conversion impact**. Fix from the top down. Treat a failing score like a
 failing test.
+
+## Judge purpose fit, not just polish
+
+Use `prestige purposes` to list deterministic purpose lenses, then audit with
+`prestige purpose <file> --purpose <key>`. Current lenses:
+
+- `developer`: concrete proof, docs, CLI/API clarity, GitHub/demo trust.
+- `healthcare`: calm reassurance, privacy, clinician proof, no miracle hype.
+- `fintech`: security, transparent fees/rates, control, compliance cues.
+- `luxury`: restraint, craft, whitespace, fewer louder elements.
+- `marketplace`: bilateral buyer/seller trust, reviews, protection, comparison.
+- `saas`: product visibility, integrations, ROI, low-friction activation.
+- `editorial`: narrative rhythm, sources, evidence, satisfying end beat.
+
+Purpose-fit scores intent clarity, proof fit, visual theme, action language, and
+anti-patterns. A beautiful healthcare page with aggressive scarcity, or a
+developer page with no docs/GitHub/demo proof, should fail even if it looks
+polished.
 
 ## The Non-Negotiable Warning
 **Never let aesthetics mask a MAJOR functional flaw.** A beautiful UI buys

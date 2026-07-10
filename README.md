@@ -14,10 +14,10 @@ the agent can *verify* its output against the principles, not just intend them.
 
 ```mermaid
 flowchart LR
-    A["User journey or page brief"] --> B["Select design workflow"]
+    A["User journey or page brief"] --> B["Select workflow and purpose"]
     B --> C["Build premium UI"]
-    C --> D["Audit five design laws"]
-    D --> E["Bias, CTA, hook, and mobile checks"]
+    C --> D["Audit five laws"]
+    D --> E["Score bias, CTA, hook, mobile, and purpose fit"]
     E -->|"fails"| F["Fix ranked recommendations"]
     F --> D
     E -->|"passes"| G["Ship UI with design receipt"]
@@ -52,6 +52,7 @@ inaccessible UI.*
 ```bash
 prestige scaffold site.html        # premium starter (scores 100/100)
 prestige audit site.html           # score the five laws + catch Horn-Effect triggers
+prestige purpose site.html --purpose developer  # opinionated purpose-fit audit
 prestige audit site.html --strict  # exit 1 if failing — use as an agent/CI gate
 ```
 
@@ -103,6 +104,32 @@ prestige score site.html --strict           # exit 1 if not conversion-ready
 
 Grounded in current research: credibility forms in ~0.05s (Google), trigger-driven
 UX lifts conversion ~34% on average (Nielsen Norman 2024).
+
+## v0.3 - purpose-fit design judgment
+
+Workflows answer **what the page optimizes for**. Purpose lenses answer **what
+psychological job the design must do for this audience and domain**.
+
+Prestige now ships deterministic purpose-fit profiles:
+
+- `developer` - concrete proof, docs, CLI/API clarity, GitHub/demo trust.
+- `healthcare` - calm reassurance, privacy, clinician proof, no miracle hype.
+- `fintech` - security, transparent fees/rates, control, compliance cues.
+- `luxury` - restraint, craft, whitespace, fewer louder elements.
+- `marketplace` - bilateral buyer/seller trust, reviews, protection, comparison.
+- `saas` - product visibility, integrations, ROI, low-friction activation.
+- `editorial` - narrative rhythm, sources, evidence, satisfying end beat.
+
+```bash
+prestige purposes
+prestige purpose site.html --purpose healthcare --strict
+prestige score site.html --workflow trust --purpose healthcare
+```
+
+The purpose gate scores intent clarity, proof fit, visual theme fit, action
+language, and purpose-specific anti-patterns. This makes Prestige more
+opinionated in the right way: not just "pretty," but fit for the decision the
+interface exists to change.
 
 ## License
 Dual-licensed **Apache-2.0 OR MIT** — pick whichever your project prefers.
