@@ -273,3 +273,28 @@ def test_cli_json_exposes_attribution(tmp_path, capsys):
     import json
     payload = json.loads(capsys.readouterr().out)
     assert payload["attribution"]["n_checked"] == 5
+
+
+def test_design_brief_compiles_developer_psychology(tmp_path):
+    from prestige_design.brief import compile_brief, render_brief
+
+    prd = tmp_path / "prd.md"
+    prd.write_text("CLI and API docs for engineers with receipts.", encoding="utf-8")
+    brief = compile_brief(prd, purpose="developer")
+    rendered = render_brief(brief)
+    assert brief.profile == "Developer Tool Clarity"
+    assert any("proof" in item for item in brief.psychology)
+    assert "Lead with install" in rendered
+    assert "prestige score" in rendered
+
+
+def test_cli_brief_json(tmp_path, capsys):
+    from prestige_design.cli import main
+
+    prd = tmp_path / "prd.md"
+    prd.write_text("checkout payment transparency", encoding="utf-8")
+    main(["brief", str(prd), "--purpose", "fintech", "--json"])
+    import json
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["purpose"] == "fintech"
+    assert any("total cost" in item.lower() for item in payload["directives"])

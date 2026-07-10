@@ -88,6 +88,12 @@ def main(argv=None):
     purpose_cmd.add_argument("--json", action="store_true")
     purpose_cmd.add_argument("--strict", action="store_true")
 
+    brief = sub.add_parser("brief", help="compile a purpose-driven design brief before UI work")
+    brief.add_argument("source", nargs="?", default=None, help="optional PRD/spec/content file")
+    brief.add_argument("--purpose", default="developer", help="developer, healthcare, fintech, luxury, marketplace, saas, editorial")
+    brief.add_argument("--out", default=None, help="write markdown brief to this path")
+    brief.add_argument("--json", action="store_true")
+
     scaffold = sub.add_parser("scaffold", help="write a premium starter template")
     scaffold.add_argument("out", nargs="?", default="premium-template.html")
 
@@ -164,6 +170,21 @@ def main(argv=None):
                     _print(f"  {i}. {rec}")
         if args.strict and not rep.passed:
             sys.exit(1)
+        return
+
+    if args.cmd == "brief":
+        from .brief import compile_brief, render_brief
+
+        rep = compile_brief(Path(args.source) if args.source else None, purpose=args.purpose)
+        if args.json:
+            print(json.dumps(rep.to_dict(), indent=2))
+        else:
+            rendered = render_brief(rep)
+            if args.out:
+                Path(args.out).write_text(rendered, encoding="utf-8")
+                _print(f"design brief written: {args.out}")
+            else:
+                _print(rendered)
         return
 
     if args.cmd == "score":

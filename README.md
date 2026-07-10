@@ -51,10 +51,24 @@ inaccessible UI.*
 
 ```bash
 prestige scaffold site.html        # premium starter (scores 100/100)
+prestige brief PRD.md --purpose developer # opinionated design brief before UI work
 prestige audit site.html           # score the five laws + catch Horn-Effect triggers
 prestige purpose site.html --purpose developer  # opinionated purpose-fit audit
 prestige audit site.html --strict  # exit 1 if failing — use as an agent/CI gate
 ```
+
+## Design brief compiler
+
+`prestige brief` turns a PRD or page brief into an opinionated design contract:
+the audience psychology, purpose-fit directives, anti-patterns, required
+sections, and verification commands. Use it before generating UI so the agent
+does not pick a generic landing-page style for a developer tool, healthcare
+workflow, fintech surface, marketplace, SaaS dashboard, luxury brand, or
+editorial page.
+
+The brief is intentionally prescriptive. A developer tool should lead with
+docs, commands, screenshots, GitHub/demo trust, and receipts. A healthcare
+workflow should feel calm, consent-aware, private, and clinically restrained.
 
 Example on a deliberately clunky page:
 ```
