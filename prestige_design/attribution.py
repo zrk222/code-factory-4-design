@@ -18,6 +18,9 @@ class FailureClass(str, Enum):
     ACCURACY_REGRESSION = "accuracy_regression"
     NONDETERMINISM = "nondeterminism"
     SECURITY_FINDING = "security_finding"
+    OFF_TOKEN = "off_token"
+    HOLLOW_TOKEN = "hollow_token"
+    CONTRACT_MISSING = "contract_missing"
 
 
 @dataclass(frozen=True)

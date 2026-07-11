@@ -105,6 +105,23 @@ def main(argv=None):
     challenge.add_argument("--feature", default=None)
     challenge.add_argument("--out", default=None)
 
+    tokens = sub.add_parser("tokens", help="scaffold and lint a frozen DESIGN.md token contract")
+    token_sub = tokens.add_subparsers(required=True, dest="token_cmd")
+    token_init = token_sub.add_parser("init", help="write a DESIGN.md token contract template")
+    token_init.add_argument("--out", default="DESIGN.md")
+    token_lint = token_sub.add_parser("lint", help="lint literal CSS values against DESIGN.md")
+    token_lint.add_argument("file")
+    token_lint.add_argument("--design", default="DESIGN.md")
+    token_lint.add_argument("--css", default=None)
+    token_lint.add_argument("--strict", action="store_true")
+    token_lint.add_argument("--json", action="store_true")
+
+    verify_tokens = sub.add_parser("verify-tokens", help="mutation-test tokens exercised by a page")
+    verify_tokens.add_argument("file")
+    verify_tokens.add_argument("--design", default="DESIGN.md")
+    verify_tokens.add_argument("--css", default=None)
+    verify_tokens.add_argument("--out", default=None)
+
     brief = sub.add_parser("brief", help="compile a purpose-driven design brief before UI work")
     brief.add_argument("source", nargs="?", default=None, help="optional PRD/spec/content file")
     brief.add_argument("--purpose", default="developer", help="developer, healthcare, fintech, luxury, marketplace, saas, editorial")
@@ -177,6 +194,39 @@ def main(argv=None):
         payload = challenge_html(Path(args.file).read_text(encoding="utf-8"), purpose=args.purpose, workflow=args.workflow)
         payload["feature"] = args.feature
         out = Path(args.out) if args.out else Path(".prestige") / "challenge.json"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+        print(json.dumps(payload | {"receipt_path": str(out)}, indent=2))
+        if not payload["passed"]:
+            raise SystemExit(1)
+        return
+
+    if args.cmd == "tokens":
+        from .tokens import report_tokens, write_template
+        if args.token_cmd == "init":
+            path = write_template(Path(args.out))
+            _print(f"design token contract written: {path}")
+            return
+        html = Path(args.file).read_text(encoding="utf-8")
+        css = Path(args.css).read_text(encoding="utf-8") if args.css else ""
+        report = report_tokens(html, Path(args.design), css)
+        if args.json:
+            print(json.dumps(report, indent=2))
+        else:
+            _print(f"design tokens: {'PASS' if report['passed'] else 'BLOCK'} ({report['n_passed']}/{report['n_checked']} on-token)")
+            for finding in report["findings"]:
+                if finding.get("failure_class"):
+                    _print(f"  {finding.get('property', 'contract')}: {finding.get('value', '')} {finding['failure_class']} -> {finding.get('nearest', '')}")
+        if args.strict and not report["passed"]:
+            raise SystemExit(1)
+        return
+
+    if args.cmd == "verify-tokens":
+        from .tokens import verify_tokens
+        html = Path(args.file).read_text(encoding="utf-8")
+        css = Path(args.css).read_text(encoding="utf-8") if args.css else ""
+        payload = verify_tokens(html, Path(args.design), css)
+        out = Path(args.out) if args.out else Path(".prestige") / "tokens.challenge.json"
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
         print(json.dumps(payload | {"receipt_path": str(out)}, indent=2))

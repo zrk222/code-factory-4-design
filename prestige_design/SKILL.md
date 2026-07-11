@@ -16,11 +16,9 @@ description: >
 # The Digital Architect of Prestige
 
 You design **high-conversion, premium interfaces** by treating design as
-applied psychology and trust engineering — not decoration. A user forms a
-credibility judgment in ~50ms from visual appeal alone; if it looks
-professional, they assume the underlying service is high-quality (the Halo
-Effect). Your job is to engineer that positive halo and never trip its
-inverse (the Horn Effect).
+applied psychology and trust engineering — not decoration. Treat psychological
+patterns as design hypotheses, not measured conversion claims. Product
+conversion claims require the project's own experiment or analytics receipt.
 
 ## How to use this skill
 
@@ -28,9 +26,11 @@ inverse (the Horn Effect).
    gaps*: where does hesitation or anxiety spike (price reveal, signup, data
    entry, checkout)? Those are where trust signals must land.
 2. **Build** — generate the interface applying the Five Laws below.
-3. **Verify** — run `prestige audit <file.html>` on your output. It scores the
-   five laws and flags Horn-Effect triggers. Fix anything it flags before
-   presenting the result. Treat a failing audit like a failing test.
+3. **Verify** — run `prestige audit <file.html>` on your output. For public UI,
+   also run `prestige render-audit <file.html>` and
+   `prestige challenge <file.html>`. When the project has a committed
+   `DESIGN.md`, run `prestige tokens lint <file.html> --strict` and
+   `prestige verify-tokens <file.html>`.
 4. **Purpose-fit** — when the domain matters, run `prestige purpose <file.html>
    --purpose <key>` or include `--purpose <key>` in `prestige score`. Workflows
    decide what the page optimizes for; purpose lenses decide whether the visual

@@ -6,9 +6,9 @@ a project skill file. It moves the agent beyond aesthetics into **applied
 psychology and trust engineering**, and ships an **executable design linter** so
 the agent can *verify* its output against the principles, not just intend them.
 
-> Users judge credibility in ~50ms from visuals alone. If it looks
-> professional, they assume the service is too (the Halo Effect). This skill
-> engineers that halo — and refuses to let a pretty page ship over a broken one.
+> Prestige combines purpose-fit design judgment with deterministic source and
+> browser gates. It refuses to let a polished page ship over a broken action,
+> a hidden surface, or a violated committed token contract.
 
 ## Workflow at a glance
 
@@ -20,7 +20,10 @@ flowchart LR
     D --> E["Score bias, CTA, hook, mobile, and purpose fit"]
     E -->|"fails"| F["Fix ranked recommendations"]
     F --> D
-    E -->|"passes"| G["Ship UI with design receipt"]
+    E -->|"passes"| F2["Lint frozen DESIGN.md tokens"]
+    F2 -->|"off-token"| F["Apply localized token correction"]
+    F2 -->|"on-token"| G["Mutation-check exercised tokens"]
+    G -->|"passes"| H["Ship UI with design receipt"]
 ```
 
 ## Install into your agent (any OS)
@@ -87,6 +90,26 @@ editorial page.
 The brief is intentionally prescriptive. A developer tool should lead with
 docs, commands, screenshots, GitHub/demo trust, and receipts. A healthcare
 workflow should feel calm, consent-aware, private, and clinically restrained.
+
+## v0.6 - Verifiable Design Tokens
+
+Prestige now treats `DESIGN.md` as a frozen, typed token contract rather than
+an advisory style guide. It never queries a live design system during a gate
+run. Literal CSS values are checked against the committed contract and any
+violation emits `OFF_TOKEN` with a localized nearest-token correction.
+
+```bash
+prestige tokens init                         # writes DESIGN.md
+prestige tokens lint page.html --strict      # blocks OFF_TOKEN or CONTRACT_MISSING
+prestige verify-tokens page.html             # mutation-checks exercised tokens
+```
+
+`verify-tokens` temporarily removes every token exercised by the page. If a
+page still passes after a used token is removed, the receipt reports
+`HOLLOW_TOKEN`. The command also refuses to certify a page that already has an
+off-token baseline. This keeps the correction local and reversible: `5px` is
+reported with its nearest allowed value; Prestige never regenerates a layout to
+fix a token mismatch.
 
 Example on a deliberately clunky page:
 ```

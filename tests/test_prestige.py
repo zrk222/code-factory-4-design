@@ -321,3 +321,56 @@ def test_design_counterfactual_kills_sabotaged_variants():
     payload = challenge_html(GOOD, purpose="developer", workflow="product")
     assert payload["passed"] is True
     assert payload["mutants_killed"] == payload["mutants_total"] == 3
+
+
+def test_token_lint_blocks_off_contract_values_and_suggests_local_fix(tmp_path):
+    from prestige_design.tokens import load_contract, lint_tokens, write_template
+
+    design = write_template(tmp_path / "DESIGN.md")
+    findings = lint_tokens(
+        "<style>.card{padding:5px;font-weight:500;border-radius:6px;color:#2563eb}</style>",
+        load_contract(design),
+    )
+    failures = [item for item in findings if not item.passed]
+    assert {item.value for item in failures} == {"5px", "500", "6px"}
+    assert next(item for item in failures if item.value == "5px").nearest == "4px"
+
+
+def test_token_contract_missing_is_a_closed_failure():
+    from prestige_design.tokens import report_tokens
+
+    report = report_tokens("<style>.card{padding:4px}</style>", None)
+    assert report["passed"] is False
+    assert report["dominant_failure_class"] == "contract_missing"
+
+
+def test_verify_tokens_kills_every_exercised_token(tmp_path):
+    from prestige_design.tokens import verify_tokens, write_template
+
+    design = write_template(tmp_path / "DESIGN.md")
+    html = "<style>.card{padding:4px;font-size:16px;font-weight:600;border-radius:8px;color:#2563eb}</style>"
+    report = verify_tokens(html, design)
+    assert report["passed"] is True
+    assert report["mutants_total"] == report["mutants_killed"] == 5
+
+
+def test_verify_tokens_refuses_to_certify_an_off_token_baseline(tmp_path):
+    from prestige_design.tokens import verify_tokens, write_template
+
+    design = write_template(tmp_path / "DESIGN.md")
+    report = verify_tokens("<style>.card{padding:5px;font-size:16px}</style>", design)
+    assert report["baseline_passed"] is False
+    assert report["passed"] is False
+
+
+def test_cli_token_lint_strict_exits_nonzero_for_off_token(tmp_path, capsys):
+    import pytest
+    from prestige_design.cli import main
+    from prestige_design.tokens import write_template
+
+    design = write_template(tmp_path / "DESIGN.md")
+    page = tmp_path / "page.html"
+    page.write_text("<style>.card{padding:5px}</style>", encoding="utf-8")
+    with pytest.raises(SystemExit, match="1"):
+        main(["tokens", "lint", str(page), "--design", str(design), "--strict"])
+    assert "off_token" in capsys.readouterr().out
