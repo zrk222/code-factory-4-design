@@ -417,6 +417,19 @@ def test_invalid_token_contract_is_a_closed_failure(tmp_path):
     assert challenge["dominant_failure_class"] == "contract_invalid"
 
 
+def test_cli_invalid_contract_shows_diagnostic_and_exits_nonzero(tmp_path, capsys):
+    import pytest
+    from prestige_design.cli import main
+
+    design = tmp_path / "DESIGN.md"
+    page = tmp_path / "page.html"
+    design.write_text("---\ncolors: [invalid]\n---\n", encoding="utf-8")
+    page.write_text("<style>.card{padding:4px}</style>", encoding="utf-8")
+    with pytest.raises(SystemExit, match="1"):
+        main(["tokens", "lint", str(page), "--design", str(design), "--strict"])
+    assert "DESIGN.md colors must be a mapping when present" in capsys.readouterr().out
+
+
 def test_verify_tokens_kills_every_exercised_token(tmp_path):
     from prestige_design.tokens import verify_tokens, write_template
 

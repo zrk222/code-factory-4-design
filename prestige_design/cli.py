@@ -216,7 +216,8 @@ def main(argv=None):
             _print(f"design tokens: {'PASS' if report['passed'] else 'BLOCK'} ({report['n_passed']}/{report['n_checked']} on-token)")
             for finding in report["findings"]:
                 if finding.get("failure_class"):
-                    _print(f"  {finding.get('property', 'contract')}: {finding.get('value', '')} {finding['failure_class']} -> {finding.get('nearest', '')}")
+                    detail = finding.get("evidence") or finding.get("nearest", "")
+                    _print(f"  {finding.get('property', 'contract')}: {finding.get('value', '')} {finding['failure_class']} -> {detail}")
         if args.strict and not report["passed"]:
             raise SystemExit(1)
         return
