@@ -68,6 +68,13 @@ def test_aesthetics_never_mask_major_flaw():
     r = audit_html(perfect_but_broken)
     assert not r.passed  # the warning is enforced: function over aesthetics
 
+
+def test_hidden_page_cannot_pass_visual_proof():
+    hidden = GOOD.replace("</style>", "body{display:none}</style>", 1)
+    r = audit_html(hidden)
+    assert not r.passed
+    assert any(f.code == "X_HIDDEN_SURFACE" for f in r.findings)
+
 def test_cli_strict_mode_exit_code(tmp_path):
     bad = tmp_path/"b.html"; bad.write_text(BAD)
     res = subprocess.run([sys.executable,"-m","prestige_design.cli","audit",str(bad),"--strict"],
@@ -298,3 +305,19 @@ def test_cli_brief_json(tmp_path, capsys):
     payload = json.loads(capsys.readouterr().out)
     assert payload["purpose"] == "fintech"
     assert any("total cost" in item.lower() for item in payload["directives"])
+
+
+def test_theme_dna_is_opinionated_and_purpose_specific():
+    from prestige_design.theme import theme_for
+    developer = theme_for("developer")
+    healthcare = theme_for("healthcare")
+    assert developer.palette != healthcare.palette
+    assert developer.density == "information-dense"
+    assert "scarcity" in healthcare.anti_patterns
+
+
+def test_design_counterfactual_kills_sabotaged_variants():
+    from prestige_design.challenge import challenge_html
+    payload = challenge_html(GOOD, purpose="developer", workflow="product")
+    assert payload["passed"] is True
+    assert payload["mutants_killed"] == payload["mutants_total"] == 3

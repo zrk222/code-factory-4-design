@@ -48,10 +48,13 @@ def _has(pattern, text, flags=re.I):
 def _count(pattern, text, flags=re.I):
     return len(re.findall(pattern, text, flags))
 
+def _strip_css_comments(text: str) -> str:
+    return re.sub(r"/\*.*?\*/", "", text, flags=re.S)
+
 def audit_html(html: str, css: str = "") -> AuditReport:
     """css may be inline in html; we scan both together for style checks."""
-    blob = html + "\n" + css
-    style = css + "\n" + " ".join(re.findall(r"<style[^>]*>(.*?)</style>", html, re.S | re.I))
+    style = _strip_css_comments(css + "\n" + " ".join(re.findall(r"<style[^>]*>(.*?)</style>", html, re.S | re.I)))
+    blob = re.sub(r"<!--.*?-->", "", html, flags=re.S) + "\n" + style
     r = AuditReport()
     f = r.findings
 
@@ -145,4 +148,9 @@ def audit_html(html: str, css: str = "") -> AuditReport:
     if len(missing_alt) >= max(3, len(imgs)//2) and imgs:
         r.hard_failures.append(f"MAJOR_FLAW: {len(missing_alt)}/{len(imgs)} images missing alt text (accessibility).")
         f.append(Finding("warning","hard_fail","X_NO_ALT","Widespread missing alt text — accessibility failure blocks ship."))
+    hidden_root = _has(r'(?:^|[},])\s*(?:html|body|main|\.hero)\s*\{[^}]*(?:display\s*:\s*none|visibility\s*:\s*hidden|opacity\s*:\s*0(?:\D|$))', style, re.S)
+    hidden_markup = _has(r'<(?:body|main)[^>]*(?:\shidden\b|aria-hidden=["\']true["\'])', html)
+    if hidden_root or hidden_markup:
+        r.hard_failures.append("MAJOR_FLAW: the primary page surface is hidden or fully transparent.")
+        f.append(Finding("warning", "hard_fail", "X_HIDDEN_SURFACE", "A hidden page cannot earn visual or conversion proof."))
     return r

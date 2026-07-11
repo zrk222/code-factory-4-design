@@ -116,8 +116,9 @@ then `prestige score <file> --workflow <key>` to score through that lens:
 
 ## The cognitive biases you engage (research-backed)
 
-Credibility forms in ~0.05s; trigger-driven UX lifts conversion ~34% on average
-(Nielsen Norman 2024). Engage these deliberately and ethically — they are
+Early credibility judgments can form in fractions of a second. Treat conversion
+impact as a hypothesis until the project produces an experiment receipt. Engage
+these deliberately and ethically — they are
 hardwired decision patterns, not tricks:
 
 - **Von Restorff (isolation)** — the ONE primary CTA must visually dominate.

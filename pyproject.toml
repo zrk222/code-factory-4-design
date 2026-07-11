@@ -1,24 +1,33 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "code-factory-4-design"
-version = "0.4.0"
+version = "0.5.0"
 description = "The Digital Architect of Prestige — a coding-agent skill for designing premium, high-conversion websites and mobile UIs using applied psychology and trust engineering. Ships a SKILL.md contract plus an executable design-linter that audits generated HTML/CSS against the Halo Effect, Cognitive Fluency, Trust Engineering, Peak-End Rule, and Horn-Effect triggers."
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT OR Apache-2.0"
 dependencies = []
 
+[project.urls]
+Homepage = "https://github.com/zrk222/code-factory-4-design"
+Documentation = "https://github.com/zrk222/code-factory-4-design#readme"
+Issues = "https://github.com/zrk222/code-factory-4-design/issues"
+
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]
+render = ["playwright>=1.48"]
 
 [project.scripts]
 prestige = "prestige_design.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["prestige_design*"]
+
+[tool.setuptools.package-data]
+prestige_design = ["SKILL.md", "../references/*.html", "../references/*.md"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

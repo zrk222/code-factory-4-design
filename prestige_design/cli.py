@@ -88,6 +88,23 @@ def main(argv=None):
     purpose_cmd.add_argument("--json", action="store_true")
     purpose_cmd.add_argument("--strict", action="store_true")
 
+    theme = sub.add_parser("theme", help="compile an opinionated purpose-driven Visual DNA contract")
+    theme.add_argument("purpose", choices=["developer", "healthcare", "fintech", "luxury", "marketplace", "saas", "editorial"])
+    theme.add_argument("--out", default=None)
+    theme.add_argument("--json", action="store_true")
+
+    render = sub.add_parser("render-audit", help="collect browser-rendered desktop and mobile evidence")
+    render.add_argument("target")
+    render.add_argument("--out-dir", default=".prestige/render")
+    render.add_argument("--json", action="store_true")
+
+    challenge = sub.add_parser("challenge", help="prove the design gate rejects sabotaged pages")
+    challenge.add_argument("file")
+    challenge.add_argument("--purpose", default="developer")
+    challenge.add_argument("--workflow", default="product", choices=["conversion", "luxury", "trust", "editorial", "product"])
+    challenge.add_argument("--feature", default=None)
+    challenge.add_argument("--out", default=None)
+
     brief = sub.add_parser("brief", help="compile a purpose-driven design brief before UI work")
     brief.add_argument("source", nargs="?", default=None, help="optional PRD/spec/content file")
     brief.add_argument("--purpose", default="developer", help="developer, healthcare, fintech, luxury, marketplace, saas, editorial")
@@ -132,6 +149,39 @@ def main(argv=None):
                 _print(f"{C['c']}{item['name']}{C['x']}  {C['d']}(--purpose {item['key']}){C['x']}")
                 _print(f"  {item['psychology']}")
                 _print(f"  {C['d']}{item['directives'][0]}{C['x']}\n")
+        return
+
+    if args.cmd == "theme":
+        from .theme import theme_for, write_theme
+        payload = theme_for(args.purpose).to_dict()
+        if args.out:
+            write_theme(args.purpose, Path(args.out))
+            payload["path"] = str(Path(args.out))
+        print(json.dumps(payload, indent=2) if args.json or not args.out else f"theme written: {args.out}")
+        return
+
+    if args.cmd == "render-audit":
+        from .render_audit import render_audit
+        try:
+            payload = render_audit(args.target, Path(args.out_dir))
+        except RuntimeError as exc:
+            _print(str(exc))
+            raise SystemExit(2)
+        print(json.dumps(payload, indent=2) if args.json else f"render audit: {'PASS' if payload['passed'] else 'BLOCK'}\nreceipt: {payload['receipt_path']}")
+        if not payload["passed"]:
+            raise SystemExit(1)
+        return
+
+    if args.cmd == "challenge":
+        from .challenge import challenge_html
+        payload = challenge_html(Path(args.file).read_text(encoding="utf-8"), purpose=args.purpose, workflow=args.workflow)
+        payload["feature"] = args.feature
+        out = Path(args.out) if args.out else Path(".prestige") / "challenge.json"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+        print(json.dumps(payload | {"receipt_path": str(out)}, indent=2))
+        if not payload["passed"]:
+            raise SystemExit(1)
         return
 
     if args.cmd == "purpose":

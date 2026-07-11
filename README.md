@@ -59,6 +59,24 @@ prestige audit site.html --strict  # exit 1 if failing — use as an agent/CI ga
 
 ## Design brief compiler
 
+Prestige now compiles an opinionated Visual DNA before implementation and
+collects browser evidence after implementation:
+
+```bash
+prestige theme developer --out prestige.theme.json
+prestige brief PRD.md --purpose developer --out DESIGN_BRIEF.md
+prestige audit app.html --strict
+prestige render-audit app.html --out-dir .prestige/render
+prestige challenge app.html --purpose developer --workflow product
+```
+
+`theme` controls palette semantics, typography, density, spacing, geometry,
+imagery, motion, trust placement, and purpose-specific anti-patterns.
+`render-audit` captures desktop and mobile screenshots and blocks hidden pages,
+horizontal overflow, incoherent region overlap, and missing visible actions.
+`challenge` proves the instrument rejects hidden, mobile-broken, and
+action-hollow mutants before its receipt can enter a Factory Passport.
+
 `prestige brief` turns a PRD or page brief into an opinionated design contract:
 the audience psychology, purpose-fit directives, anti-patterns, required
 sections, and verification commands. Use it before generating UI so the agent
@@ -116,8 +134,10 @@ prestige score site.html --workflow trust   # precise score + ranked fixes
 prestige score site.html --strict           # exit 1 if not conversion-ready
 ```
 
-Grounded in current research: credibility forms in ~0.05s (Google), trigger-driven
-UX lifts conversion ~34% on average (Nielsen Norman 2024).
+Grounded in established design research, the psychology profiles are design
+hypotheses and lint rules, not measured
+conversion lift. Product conversion claims require the project's own experiment
+or analytics receipt.
 
 ## v0.3 - purpose-fit design judgment
 
@@ -152,3 +172,5 @@ Dual-licensed **Apache-2.0 OR MIT** — pick whichever your project prefers.
 Prestige 0.2.1 wraps its existing five per-law scores in the factory attribution
 envelope. Run `prestige audit page.html --json` to receive one unit per design
 criterion, its score and threshold, and the unchanged overall verdict.
+[![CI](https://github.com/zrk222/code-factory-4-design/actions/workflows/ci.yaml/badge.svg)](https://github.com/zrk222/code-factory-4-design/actions/workflows/ci.yaml)
+[![PyPI](https://img.shields.io/pypi/v/code-factory-4-design.svg)](https://pypi.org/project/code-factory-4-design/)

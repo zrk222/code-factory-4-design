@@ -3,8 +3,8 @@ detectable interface elements. This is the depth upgrade: instead of five
 vague 'laws', the audit checks whether specific, research-backed biases are
 actually engaged in the markup, and scores how well each is executed.
 
-Credibility judgments form in ~0.05s (Google Research); trigger-driven UX
-lifts conversion ~34% on average (Nielsen Norman 2024). Each bias below has:
+Early credibility judgments can form in fractions of a second. Treat every
+conversion hypothesis as project-specific until an experiment receipts it. Each bias below has:
 a detector (is it present?), a quality check (is it done right?), and a
 precise recommendation (how to fix it).
 """
