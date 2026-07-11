@@ -336,12 +336,85 @@ def test_token_lint_blocks_off_contract_values_and_suggests_local_fix(tmp_path):
     assert next(item for item in failures if item.value == "5px").nearest == "4px"
 
 
+def test_tokens_accept_upstream_design_md_yaml_front_matter(tmp_path):
+    from prestige_design.tokens import load_contract, lint_tokens
+
+    design = tmp_path / "DESIGN.md"
+    design.write_text(
+        """---
+version: alpha
+name: Daylight Prestige
+colors:
+  primary: \"#1A1C1E\"
+  secondary: \"#6C7278\"
+typography:
+  h1:
+    fontFamily: Public Sans
+    fontSize: 48px
+    fontWeight: 600
+    lineHeight: 1.1
+spacing:
+  md: 16px
+rounded:
+  sm: 4px
+---
+
+## Overview
+An upstream DESIGN.md-shaped contract.
+""",
+        encoding="utf-8",
+    )
+    contract = load_contract(design)
+    findings = lint_tokens(
+        "<style>.card{padding:16px;font-size:48px;font-weight:600;border-radius:4px;color:#1a1c1e}</style>",
+        contract,
+    )
+    assert contract["color"] == ["#1a1c1e", "#6c7278"]
+    assert findings and all(item.passed for item in findings)
+
+
+def test_tokens_enforce_upstream_rem_dimensions(tmp_path):
+    from prestige_design.tokens import lint_tokens, load_contract
+
+    design = tmp_path / "DESIGN.md"
+    design.write_text(
+        "---\ncolors:\n  primary: '#ffffff'\nrounded:\n  lg: 1rem\nspacing:\n  md: 1.5rem\n---\n",
+        encoding="utf-8",
+    )
+    findings = lint_tokens("<style>.card{padding:1.5rem;border-radius:1rem;color:#ffffff}</style>", load_contract(design))
+    assert findings and all(item.passed for item in findings)
+
+
+def test_tokens_keep_legacy_contracts_readable(tmp_path):
+    from prestige_design.tokens import load_contract
+
+    design = tmp_path / "DESIGN.md"
+    design.write_text(
+        """```design-tokens
+{"spacing":["4px"],"font_size":["16px"],"font_weight":["400"],"radius":["0px"],"color":["#ffffff"]}
+```""",
+        encoding="utf-8",
+    )
+    assert load_contract(design)["spacing"] == ["4px"]
+
+
 def test_token_contract_missing_is_a_closed_failure():
     from prestige_design.tokens import report_tokens
 
     report = report_tokens("<style>.card{padding:4px}</style>", None)
     assert report["passed"] is False
     assert report["dominant_failure_class"] == "contract_missing"
+
+
+def test_invalid_token_contract_is_a_closed_failure(tmp_path):
+    from prestige_design.tokens import report_tokens, verify_tokens
+
+    design = tmp_path / "DESIGN.md"
+    design.write_text("---\ncolors: [not-a-mapping]\n---\n", encoding="utf-8")
+    report = report_tokens("<style>.card{padding:4px}</style>", design)
+    challenge = verify_tokens("<style>.card{padding:4px}</style>", design)
+    assert report["dominant_failure_class"] == "contract_invalid"
+    assert challenge["dominant_failure_class"] == "contract_invalid"
 
 
 def test_verify_tokens_kills_every_exercised_token(tmp_path):

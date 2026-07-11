@@ -21,6 +21,7 @@ class FailureClass(str, Enum):
     OFF_TOKEN = "off_token"
     HOLLOW_TOKEN = "hollow_token"
     CONTRACT_MISSING = "contract_missing"
+    CONTRACT_INVALID = "contract_invalid"
 
 
 @dataclass(frozen=True)

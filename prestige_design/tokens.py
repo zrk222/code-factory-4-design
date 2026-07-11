@@ -6,22 +6,51 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
+import yaml
+
 from .attribution import FailureClass
 
-TEMPLATE = '''# DESIGN.md
+TEMPLATE = '''---
+version: alpha
+name: Project design contract
+colors:
+  ink: "#101828"
+  surface: "#ffffff"
+  primary: "#2563eb"
+  success: "#16a34a"
+  danger: "#dc2626"
+typography:
+  body:
+    fontSize: 16px
+    fontWeight: 400
+  label:
+    fontSize: 14px
+    fontWeight: 600
+  title:
+    fontSize: 32px
+    fontWeight: 700
+spacing:
+  xs: 4px
+  sm: 8px
+  md: 12px
+  lg: 16px
+  xl: 24px
+  xxl: 32px
+rounded:
+  none: 0px
+  sm: 4px
+  md: 8px
+---
+
+# DESIGN.md
 
 This committed file is the frozen visual token contract for this project.
 Do not query a live design system during a gate run.
 
-```design-tokens
-{
-  "spacing": ["4px", "8px", "12px", "16px", "24px", "32px", "48px"],
-  "font_size": ["14px", "16px", "20px", "24px", "32px", "48px"],
-  "font_weight": ["400", "600", "700"],
-  "radius": ["0px", "4px", "8px"],
-  "color": ["#101828", "#ffffff", "#2563eb", "#16a34a", "#dc2626"]
-}
-```
+## Overview
+
+Describe the intended visual character, audience, and interaction principles.
+The YAML front matter is the machine-enforced token source of truth.
 '''
 
 PROPERTY_GROUPS = {
@@ -52,8 +81,54 @@ def write_template(path: Path) -> Path:
     return path
 
 
+def _mapping_values(payload: dict, key: str) -> list[str]:
+    value = payload.get(key, {})
+    if value is None:
+        return []
+    if not isinstance(value, dict):
+        raise ValueError(f"DESIGN.md {key} must be a mapping when present")
+    return [str(item).lower() for item in value.values()]
+
+
+def _google_contract(text: str) -> dict[str, list[str]]:
+    match = re.match(r"^---\s*\n(.*?)\n---(?:\s*\n|$)", text, re.S)
+    if not match:
+        raise ValueError("DESIGN.md must begin with YAML front matter or contain a legacy design-tokens block")
+    try:
+        payload = yaml.safe_load(match.group(1)) or {}
+    except yaml.YAMLError as error:
+        raise ValueError(f"invalid DESIGN.md YAML front matter: {error}") from error
+    if not isinstance(payload, dict):
+        raise ValueError("DESIGN.md YAML front matter must be a mapping")
+
+    typography = payload.get("typography", {})
+    if typography is None:
+        typography = {}
+    if not isinstance(typography, dict):
+        raise ValueError("DESIGN.md typography must be a mapping when present")
+    font_size = []
+    font_weight = []
+    for style in typography.values():
+        if not isinstance(style, dict):
+            continue
+        if "fontSize" in style:
+            font_size.append(str(style["fontSize"]).lower())
+        if "fontWeight" in style:
+            font_weight.append(str(style["fontWeight"]).lower())
+
+    return {
+        "spacing": _mapping_values(payload, "spacing"),
+        "font_size": font_size,
+        "font_weight": font_weight,
+        "radius": _mapping_values(payload, "rounded"),
+        "color": _mapping_values(payload, "colors"),
+    }
+
+
 def load_contract(path: Path) -> dict[str, list[str]]:
     text = path.read_text(encoding="utf-8")
+    if text.startswith("---"):
+        return _google_contract(text)
     match = re.search(r"```design-tokens\s*(\{.*?\})\s*```", text, re.S)
     if not match:
         raise ValueError("DESIGN.md must contain one ```design-tokens JSON block```")
@@ -71,13 +146,13 @@ def _css(html: str, css: str) -> str:
 
 
 def _nearest(value: str, allowed: list[str]) -> str | None:
-    number = re.fullmatch(r"(-?\d+(?:\.\d+)?)(px)?", value)
+    number = re.fullmatch(r"(-?\d+(?:\.\d+)?)([a-z%]+)?", value)
     if not number:
         return allowed[0] if allowed else None
     unit = number.group(2) or ""
     candidates = []
     for item in allowed:
-        candidate = re.fullmatch(r"(-?\d+(?:\.\d+)?)(px)?", item)
+        candidate = re.fullmatch(r"(-?\d+(?:\.\d+)?)([a-z%]+)?", item)
         if candidate and (candidate.group(2) or "") == unit:
             candidates.append((abs(float(number.group(1)) - float(candidate.group(1))), item))
     return min(candidates)[1] if candidates else (allowed[0] if allowed else None)
@@ -91,7 +166,7 @@ def _values(group: str, raw: str) -> list[str]:
         return re.findall(r"#[0-9a-f]{3,8}\b", raw)
     if group == "font_weight":
         return re.findall(r"\b(?:[1-9]00)\b", raw)
-    return re.findall(r"-?\d+(?:\.\d+)?px", raw)
+    return re.findall(r"-?\d+(?:\.\d+)?(?:px|rem|em|%|vh|vw)", raw)
 
 
 def lint_tokens(html: str, contract: dict[str, list[str]], css: str = "") -> list[TokenFinding]:
@@ -120,7 +195,14 @@ def report_tokens(html: str, design: Path | None, css: str = "") -> dict:
             "findings": [{"failure_class": FailureClass.CONTRACT_MISSING.value,
                           "evidence": "DESIGN.md is required for strict token linting"}],
         }
-    contract = load_contract(design)
+    try:
+        contract = load_contract(design)
+    except ValueError as error:
+        return {
+            "stage": "design_tokens", "passed": False, "n_checked": 0, "n_passed": 0,
+            "rate": 0.0, "dominant_failure_class": FailureClass.CONTRACT_INVALID.value,
+            "findings": [{"failure_class": FailureClass.CONTRACT_INVALID.value, "evidence": str(error)}],
+        }
     findings = lint_tokens(html, contract, css)
     passed = sum(item.passed for item in findings)
     failures = [item for item in findings if not item.passed]
@@ -133,7 +215,15 @@ def report_tokens(html: str, design: Path | None, css: str = "") -> dict:
 
 
 def verify_tokens(html: str, design: Path, css: str = "") -> dict:
-    contract = load_contract(design)
+    try:
+        contract = load_contract(design)
+    except ValueError as error:
+        return {
+            "schema": "factory.challenge.v1", "brick": "prestige", "stage": "design_tokens",
+            "passed": False, "baseline_passed": False, "mutants_total": 0, "mutants_killed": 0,
+            "mutations": [], "dominant_failure_class": FailureClass.CONTRACT_INVALID.value,
+            "evidence": str(error), "scope": "mutates every token exercised by the supplied page",
+        }
     baseline = lint_tokens(html, contract, css)
     exercised = [item for item in baseline if item.passed]
     mutations = []
