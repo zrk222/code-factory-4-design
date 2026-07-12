@@ -430,6 +430,12 @@ def test_cli_invalid_contract_shows_diagnostic_and_exits_nonzero(tmp_path, capsy
     assert "DESIGN.md colors must be a mapping when present" in capsys.readouterr().out
 
 
+def test_runtime_version_matches_the_release():
+    import prestige_design
+
+    assert prestige_design.__version__ == "0.7.1"
+
+
 def test_verify_tokens_kills_every_exercised_token(tmp_path):
     from prestige_design.tokens import verify_tokens, write_template
 
@@ -495,6 +501,26 @@ def test_proof_report_emits_actionable_contract_repair(tmp_path):
     assert github_annotations(report) == [
         "::error file=page.html,line=1,title=P-DESIGN-OFF_TOKEN-001::padding uses 5px"
     ]
+
+
+def test_proof_report_copies_rendered_evidence_into_the_bundle(tmp_path):
+    from prestige_design.adoption import write_proof_report
+    import json
+
+    screenshot = tmp_path / "runner-only" / "desktop.png"
+    screenshot.parent.mkdir(parents=True)
+    screenshot.write_bytes(b"png")
+    report = {
+        "passed": True, "verified_tokens": 1, "checked_tokens": 1,
+        "issues": [], "mutation": {"mutations": []},
+        "summary": {"blocking": 0, "contract_failures": 0, "proof_failures": 0},
+        "render": {"viewports": [{"viewport": "desktop", "screenshot": str(screenshot)}]},
+    }
+    paths = write_proof_report(report, tmp_path / "bundle")
+    payload = json.loads(Path(paths["json"]).read_text(encoding="utf-8"))
+    assert payload["render"]["viewports"][0]["screenshot"] == "screenshots/desktop.png"
+    assert (tmp_path / "bundle" / "screenshots" / "desktop.png").exists()
+    assert "screenshots/desktop.png" in Path(paths["html"]).read_text(encoding="utf-8")
 
 
 def test_ci_template_is_local_and_includes_uploadable_proof():

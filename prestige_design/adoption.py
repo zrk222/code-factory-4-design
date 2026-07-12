@@ -6,6 +6,7 @@ from html import escape
 import json
 from pathlib import Path
 import re
+import shutil
 
 import yaml
 
@@ -221,10 +222,20 @@ def _html_report(report: dict) -> str:
 
 def write_proof_report(report: dict, out_dir: Path) -> dict:
     out_dir.mkdir(parents=True, exist_ok=True)
+    # Keep linked screenshots inside the exported proof bundle, not on a CI runner.
+    portable_report = json.loads(json.dumps(report))
+    for item in (portable_report.get("render") or {}).get("viewports", []):
+        screenshot = Path(item.get("screenshot", ""))
+        if screenshot.is_file():
+            screenshot_dir = out_dir / "screenshots"
+            screenshot_dir.mkdir(exist_ok=True)
+            target = screenshot_dir / screenshot.name
+            shutil.copy2(screenshot, target)
+            item["screenshot"] = target.relative_to(out_dir).as_posix()
     json_path = out_dir / "proof-report.json"
     html_path = out_dir / "proof-report.html"
-    json_path.write_text(json.dumps(report, indent=2, sort_keys=True), encoding="utf-8")
-    html_path.write_text(_html_report(report), encoding="utf-8")
+    json_path.write_text(json.dumps(portable_report, indent=2, sort_keys=True), encoding="utf-8")
+    html_path.write_text(_html_report(portable_report), encoding="utf-8")
     return {"json": str(json_path), "html": str(html_path)}
 
 
