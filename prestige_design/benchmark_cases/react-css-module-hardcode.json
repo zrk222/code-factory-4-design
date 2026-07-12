@@ -1,0 +1,7 @@
+{
+  "id": "react-css-module-hardcode",
+  "framework": "React CSS Modules compiled CSS",
+  "page": "react-css-module-hardcode.html",
+  "design": "react-css-module-hardcode.DESIGN.md",
+  "expected_block": true
+}

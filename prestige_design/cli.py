@@ -122,6 +122,45 @@ def main(argv=None):
     verify_tokens.add_argument("--css", default=None)
     verify_tokens.add_argument("--out", default=None)
 
+    init = sub.add_parser("init", help="scan source and propose a reviewable DESIGN.md contract")
+    init.add_argument("--root", default=".")
+    init.add_argument("--out", default="DESIGN.md")
+    init.add_argument("--force", action="store_true")
+    init.add_argument("--json", action="store_true")
+
+    report = sub.add_parser("report", help="write a static local token-contract proof viewer")
+    report.add_argument("file")
+    report.add_argument("--design", default="DESIGN.md")
+    report.add_argument("--css", default=None)
+    report.add_argument("--root", default=None)
+    report.add_argument("--out-dir", default=".prestige/report")
+    report.add_argument("--changed", action="append", default=[])
+    report.add_argument("--render-receipt", default=None)
+    report.add_argument("--json", action="store_true")
+
+    pr = sub.add_parser("pr", help="write PR summary, annotations, and static proof artifacts")
+    pr.add_argument("file")
+    pr.add_argument("--design", default="DESIGN.md")
+    pr.add_argument("--css", default=None)
+    pr.add_argument("--root", default=None)
+    pr.add_argument("--out-dir", default=".prestige/pr")
+    pr.add_argument("--changed", action="append", default=[])
+    pr.add_argument("--render-receipt", default=None)
+    pr.add_argument("--github-annotations", action="store_true")
+    pr.add_argument("--json", action="store_true")
+
+    ci = sub.add_parser("ci", help="write a copy-paste GitHub or GitLab proof workflow")
+    ci_sub = ci.add_subparsers(required=True, dest="ci_cmd")
+    ci_init = ci_sub.add_parser("init", help="write a CI template without contacting a forge")
+    ci_init.add_argument("--platform", choices=["github", "gitlab"], default="github")
+    ci_init.add_argument("--page", required=True)
+    ci_init.add_argument("--design", default="DESIGN.md")
+    ci_init.add_argument("--out", default=None)
+
+    benchmark = sub.add_parser("benchmark", help="run the transparent token-contract fixture benchmark")
+    benchmark.add_argument("--root", default=None)
+    benchmark.add_argument("--json", action="store_true")
+
     brief = sub.add_parser("brief", help="compile a purpose-driven design brief before UI work")
     brief.add_argument("source", nargs="?", default=None, help="optional PRD/spec/content file")
     brief.add_argument("--purpose", default="developer", help="developer, healthcare, fintech, luxury, marketplace, saas, editorial")
@@ -199,6 +238,55 @@ def main(argv=None):
         print(json.dumps(payload | {"receipt_path": str(out)}, indent=2))
         if not payload["passed"]:
             raise SystemExit(1)
+        return
+
+    if args.cmd == "init":
+        from .adoption import write_scanned_contract
+        try:
+            payload = write_scanned_contract(Path(args.root), Path(args.out), force=args.force)
+        except FileExistsError as exc:
+            _print(str(exc))
+            raise SystemExit(2)
+        print(json.dumps(payload, indent=2) if args.json else f"reviewable contract written: {payload['contract_path']}\nscan receipt: {payload['scan_path']}")
+        return
+
+    if args.cmd in {"report", "pr"}:
+        from .adoption import github_annotations, proof_report, write_pr_bundle, write_proof_report
+        page = Path(args.file)
+        report = proof_report(page, Path(args.design), css=Path(args.css) if args.css else None,
+                              root=Path(args.root) if args.root else page.parent, changed=args.changed,
+                              render_receipt=Path(args.render_receipt) if args.render_receipt else None)
+        paths = write_pr_bundle(report, Path(args.out_dir)) if args.cmd == "pr" else write_proof_report(report, Path(args.out_dir))
+        payload = report | {"paths": paths}
+        if args.json:
+            print(json.dumps(payload, indent=2))
+        else:
+            _print(f"Prestige {'PR bundle' if args.cmd == 'pr' else 'proof report'}: {'PASS' if report['passed'] else 'BLOCK'}")
+            _print(f"blocking findings: {report['summary']['blocking']}")
+            for key, value in paths.items():
+                _print(f"{key}: {value}")
+            for item in report["issues"]:
+                _print(f"  {item['id']} {item['failure_class']}: {item['suggested_repair']}")
+        if args.cmd == "pr" and args.github_annotations:
+            for command in github_annotations(report):
+                print(command)
+        if not report["passed"]:
+            raise SystemExit(1)
+        return
+
+    if args.cmd == "ci":
+        from .adoption import ci_template
+        out = Path(args.out) if args.out else (Path(".github/workflows/prestige.yml") if args.platform == "github" else Path(".gitlab-ci.yml"))
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(ci_template(args.platform, args.page, args.design), encoding="utf-8")
+        _print(f"{args.platform} CI template written: {out}")
+        return
+
+    if args.cmd == "benchmark":
+        from .benchmarks import run_benchmarks
+        root = Path(args.root) if args.root else Path(__file__).with_name("benchmark_cases")
+        payload = run_benchmarks(root)
+        print(json.dumps(payload, indent=2) if args.json else f"benchmark cases: {len(payload['cases'])}; true-positive rate: {payload['true_positive_rate']}; false-positive rate: {payload['false_positive_rate']}")
         return
 
     if args.cmd == "tokens":

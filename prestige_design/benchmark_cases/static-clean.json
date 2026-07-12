@@ -1,0 +1,7 @@
+{
+  "id": "static-clean",
+  "framework": "static HTML",
+  "page": "static-clean.html",
+  "design": "static-clean.DESIGN.md",
+  "expected_block": false
+}

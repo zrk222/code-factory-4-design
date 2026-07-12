@@ -460,3 +460,58 @@ def test_cli_token_lint_strict_exits_nonzero_for_off_token(tmp_path, capsys):
     with pytest.raises(SystemExit, match="1"):
         main(["tokens", "lint", str(page), "--design", str(design), "--strict"])
     assert "off_token" in capsys.readouterr().out
+
+
+def test_init_scans_source_into_reviewable_design_contract(tmp_path):
+    from prestige_design.adoption import write_scanned_contract
+    from prestige_design.tokens import load_contract
+
+    (tmp_path / "app.css").write_text(
+        ":root{--brand:#2563eb}.card{padding:16px;border-radius:8px;color:#2563eb}",
+        encoding="utf-8",
+    )
+    result = write_scanned_contract(tmp_path, tmp_path / "DESIGN.md")
+    contract = load_contract(tmp_path / "DESIGN.md")
+    assert result["files_scanned"] == ["app.css"]
+    assert "#2563eb" in contract["color"]
+    assert "16px" in contract["spacing"]
+    assert (tmp_path / "contract-scan.json").exists()
+
+
+def test_proof_report_emits_actionable_contract_repair(tmp_path):
+    from prestige_design.adoption import github_annotations, proof_report, write_pr_bundle
+    from prestige_design.tokens import write_template
+
+    design = write_template(tmp_path / "DESIGN.md")
+    page = tmp_path / "page.html"
+    page.write_text("<style>.card{padding:5px;color:#2563eb}</style>", encoding="utf-8")
+    report = proof_report(page, design, root=tmp_path, changed=["page.html"])
+    issue = next(item for item in report["issues"] if item["failure_class"] == "off_token")
+    assert issue["category"] == "contract"
+    assert issue["severity"] == "blocking"
+    assert "approved token value 4px" in issue["suggested_repair"]
+    paths = write_pr_bundle(report, tmp_path / ".prestige" / "pr")
+    assert Path(paths["html"]).exists() and Path(paths["markdown"]).exists()
+    assert github_annotations(report) == [
+        "::error file=page.html,line=1,title=P-DESIGN-OFF_TOKEN-001::padding uses 5px"
+    ]
+
+
+def test_ci_template_is_local_and_includes_uploadable_proof():
+    from prestige_design.adoption import ci_template
+
+    github = ci_template("github", "app.html", "DESIGN.md")
+    gitlab = ci_template("gitlab", "app.html", "DESIGN.md")
+    assert "pull_request" in github and "upload-artifact" in github and "prestige pr app.html" in github
+    assert "artifacts:" in gitlab and "prestige pr app.html" in gitlab
+
+
+def test_fixture_benchmark_reports_measured_rates():
+    from prestige_design.benchmarks import run_benchmarks
+    import prestige_design
+
+    root = Path(prestige_design.__file__).with_name("benchmark_cases")
+    result = run_benchmarks(root)
+    assert result["counts"] == {"true_positive": 2, "true_negative": 1, "false_positive": 0, "false_negative": 0}
+    assert result["true_positive_rate"] == 1.0
+    assert result["false_positive_rate"] == 0.0

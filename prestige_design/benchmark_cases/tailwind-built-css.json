@@ -1,0 +1,7 @@
+{
+  "id": "tailwind-built-css",
+  "framework": "Tailwind compiled CSS",
+  "page": "tailwind-built-css.html",
+  "design": "tailwind-built-css.DESIGN.md",
+  "expected_block": true
+}

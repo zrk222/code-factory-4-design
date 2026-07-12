@@ -123,6 +123,30 @@ Malformed contracts are rejected with the parser diagnostic and a non-zero
 exit in strict mode. This is compatibility for the supported token contract,
 not a claim to implement or replace the upstream document linter.
 
+## v0.7 - Proof That Developers Can Act On
+
+Prestige now turns a token finding into a local, reviewable repair path:
+
+```bash
+prestige init --root . --out DESIGN.md                 # scan a proposed contract; review it before gating
+prestige pr page.html --design DESIGN.md --root .       # JSON, HTML, Markdown, and annotation artifacts
+prestige ci init --platform github --page page.html     # copy-paste pull-request workflow
+prestige benchmark --json                               # measured fixture outcomes, never hand-typed rates
+```
+
+`prestige pr` creates a static proof viewer plus a compact PR summary. It
+separates blocking **contract failures** (`OFF_TOKEN`), blocking **proof
+failures** (`HOLLOW_TOKEN`), and non-blocking design advisories. Each literal
+contract failure includes the approved nearest value and literal source
+references when they can be found. Suggested repairs are reviewable; Prestige
+does not silently change product code.
+
+The included benchmark suite covers static HTML, compiled React CSS Modules,
+and compiled Tailwind CSS fixtures. Its true/false-positive results are derived
+from committed labels at runtime. They are fixture evidence, not a claim of
+production framework coverage or flake rate. See [ADOPTION.md](docs/ADOPTION.md)
+for the workflow, CI templates, and exact evidence boundary.
+
 Example on a deliberately clunky page:
 ```
 Overall: 18/100   Verdict: NEEDS WORK

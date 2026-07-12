@@ -30,7 +30,10 @@ conversion claims require the project's own experiment or analytics receipt.
    also run `prestige render-audit <file.html>` and
    `prestige challenge <file.html>`. When the project has a committed
    `DESIGN.md`, run `prestige tokens lint <file.html> --strict` and
-   `prestige verify-tokens <file.html>`.
+   `prestige verify-tokens <file.html>`. For adoption, use `prestige init
+   --root .` to propose a reviewable contract, then `prestige pr` to write
+   local HTML/JSON/Markdown proof artifacts before CI review. Treat contract
+   scanning as a reviewed starting point, never an approved policy.
 4. **Purpose-fit** — when the domain matters, run `prestige purpose <file.html>
    --purpose <key>` or include `--purpose <key>` in `prestige score`. Workflows
    decide what the page optimizes for; purpose lenses decide whether the visual
