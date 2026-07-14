@@ -12,4 +12,4 @@ can *verify* its own output before shipping:
 
 The warning is enforced too: aesthetics never mask a MAJOR functional flaw.
 """
-__version__ = "0.7.2"
+__version__ = "0.7.3"
