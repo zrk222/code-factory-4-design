@@ -56,6 +56,12 @@ def _fmt(report, path, as_json):
 
 
 def main(argv=None):
+    argv = list(sys.argv[1:] if argv is None else argv)
+    if argv and argv[0] == "--version":
+        from .provenance import provenance
+        payload = provenance()
+        _print(json.dumps(payload, indent=2, sort_keys=True) if "--json" in argv else f"prestige {payload['version']}")
+        return
     parser = argparse.ArgumentParser(
         prog="prestige",
         description="Premium design audit and scaffold",
@@ -174,7 +180,16 @@ def main(argv=None):
     install_cmd.add_argument("agent")
     install_cmd.add_argument("--root", default=".")
 
+    version = sub.add_parser("version", help="show package provenance")
+    version.add_argument("--json", action="store_true")
+
     args = parser.parse_args(argv)
+
+    if args.cmd == "version":
+        from .provenance import provenance
+        payload = provenance()
+        _print(json.dumps(payload, indent=2, sort_keys=True) if args.json else f"prestige {payload['version']}")
+        return
 
     if args.cmd == "workflows":
         from .workflows import list_workflows

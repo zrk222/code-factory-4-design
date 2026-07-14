@@ -433,7 +433,7 @@ def test_cli_invalid_contract_shows_diagnostic_and_exits_nonzero(tmp_path, capsy
 def test_runtime_version_matches_the_release():
     import prestige_design
 
-    assert prestige_design.__version__ == "0.7.1"
+    assert prestige_design.__version__ == "0.7.2"
 
 
 def test_verify_tokens_kills_every_exercised_token(tmp_path):

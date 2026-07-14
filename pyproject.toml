@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "code-factory-4-design"
-version = "0.7.1"
+version = "0.7.2"
 description = "The Digital Architect of Prestige — a coding-agent skill for designing premium, high-conversion websites and mobile UIs using applied psychology and trust engineering. Ships a SKILL.md contract plus an executable design-linter that audits generated HTML/CSS against the Halo Effect, Cognitive Fluency, Trust Engineering, Peak-End Rule, and Horn-Effect triggers."
 readme = "README.md"
 requires-python = ">=3.11"
