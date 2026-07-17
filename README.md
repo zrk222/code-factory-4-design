@@ -10,6 +10,25 @@ the agent can *verify* its output against the principles, not just intend them.
 > browser gates. It refuses to let a polished page ship over a broken action,
 > a hidden surface, or a violated committed token contract.
 
+## Code Factory target handoff
+
+Code Factory can emit blocked `web`, Expo `mobile`, and supervised
+`agent-ui` starters from one reviewed prompt or PRD. Prestige is the
+user-facing proof lane after generation: compile a purpose-fit design brief,
+apply the committed tokens, capture desktop and mobile render evidence, and
+challenge hidden, overflowing, overlapping, or action-hollow mutants.
+
+```mermaid
+flowchart LR
+    A["Intent"] --> B["Build and gate"]
+    B --> C["Compile and verify"]
+    C --> D["Signed receipts and human-owned ship"]
+```
+
+A starter's presence is not a design verdict. Promotion remains blocked until
+the product-specific interaction, accessibility, responsive, and visual proof
+passes; Prestige does not deploy, publish, sign, or grant connectors.
+
 ## Workflow at a glance
 
 ```mermaid
