@@ -10,6 +10,27 @@ the agent can *verify* its output against the principles, not just intend them.
 > browser gates. It refuses to let a polished page ship over a broken action,
 > a hidden surface, or a violated committed token contract.
 
+## New in 0.8.0: seven-lens critique receipts
+
+`prestige critique` turns visual review into a compact, machine-readable
+receipt spanning visual hierarchy, composition, color, affordance, information
+density, typography, and brand consistency:
+
+```bash
+prestige critique site.html --css site.css --json
+prestige critique site.html --design DESIGN.md --challenge --strict --out .prestige/critique.json
+```
+
+Every finding uses an Observation / Problem / Fix shape and labels its evidence
+as `deterministic` or `heuristic`. Only deterministic P1/P2 findings block
+strict mode. Heuristic judgments carry confidence and never masquerade as
+measured conversion or accessibility conformance.
+
+The challenge creates seven isolated defects and must reject all seven before
+emitting `CRITIQUE_MUTATIONS_REJECTED`. Optional `DESIGN.md`, `MOOD.md`, and
+`VOICE.md` contracts are hashed when present and reported as missing when
+absent; their bodies are never copied into the receipt.
+
 ## Code Factory target handoff
 
 Code Factory can emit blocked `web`, Expo `mobile`, and supervised

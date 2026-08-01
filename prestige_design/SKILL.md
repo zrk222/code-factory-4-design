@@ -27,7 +27,12 @@ conversion claims require the project's own experiment or analytics receipt.
    entry, checkout)? Those are where trust signals must land.
 2. **Build** — generate the interface applying the Five Laws below.
 3. **Verify** — run `prestige audit <file.html>` on your output. For public UI,
-   also run `prestige render-audit <file.html>` and
+   also run `prestige critique <file.html> --challenge --strict --out
+   .prestige/critique.json`. The critique receipt covers hierarchy,
+   composition, color, affordance, density, typography, and brand consistency.
+   Treat deterministic P1/P2 findings as blocking and confidence-labelled
+   heuristics as review prompts, not conversion or accessibility claims. Then
+   run `prestige render-audit <file.html>` and
    `prestige challenge <file.html>`. When the project has a committed
    `DESIGN.md`, run `prestige tokens lint <file.html> --strict` and
    `prestige verify-tokens <file.html>`. For adoption, use `prestige init
