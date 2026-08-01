@@ -73,6 +73,17 @@ def main(argv=None):
     audit.add_argument("--json", action="store_true")
     audit.add_argument("--strict", action="store_true", help="exit nonzero if not passing")
 
+    critique = sub.add_parser("critique", help="run a seven-lens deterministic-first interface critique")
+    critique.add_argument("file")
+    critique.add_argument("--css", default=None)
+    critique.add_argument("--design", default="DESIGN.md")
+    critique.add_argument("--mood", default="MOOD.md")
+    critique.add_argument("--voice", default="VOICE.md")
+    critique.add_argument("--challenge", action="store_true", help="prove all seven critique dimensions reject a mutant")
+    critique.add_argument("--out", default=None, help="atomically write the critique receipt")
+    critique.add_argument("--json", action="store_true")
+    critique.add_argument("--strict", action="store_true", help="exit nonzero for deterministic P1 or P2 findings")
+
     score = sub.add_parser("score", help="conversion-readiness score with ranked recommendations")
     score.add_argument("file")
     score.add_argument("--css", default=None)
@@ -189,6 +200,46 @@ def main(argv=None):
         from .provenance import provenance
         payload = provenance()
         _print(json.dumps(payload, indent=2, sort_keys=True) if args.json else f"prestige {payload['version']}")
+        return
+
+    if args.cmd == "critique":
+        from .critique import challenge_critique, critique_html, write_critique_receipt
+
+        html = Path(args.file).read_text(encoding="utf-8")
+        css = Path(args.css).read_text(encoding="utf-8") if args.css else ""
+        payload = critique_html(
+            html,
+            css,
+            design=Path(args.design) if args.design else None,
+            mood=Path(args.mood) if args.mood else None,
+            voice=Path(args.voice) if args.voice else None,
+        )
+        if args.challenge:
+            challenge_payload = challenge_critique(html, css)
+            payload["challenge"] = challenge_payload
+            if challenge_payload["passed"]:
+                payload["markers"].append("CRITIQUE_MUTATIONS_REJECTED")
+        if args.strict:
+            payload["markers"].append("CRITIQUE_STRICT_EXIT_EXACT")
+        if args.out:
+            payload["markers"].append("CRITIQUE_RECEIPT_ATOMIC")
+            payload["receipt_path"] = str(write_critique_receipt(payload, Path(args.out)))
+        if args.json:
+            print(json.dumps(payload, indent=2))
+        else:
+            verdict = "PASS" if payload["passed"] else "BLOCK"
+            _print(f"Prestige seven-lens critique: {verdict}")
+            _print("  " + "  ".join(f"{key}:{value}" for key, value in payload["severity_counts"].items()))
+            for finding in payload["findings"]:
+                _print(f"  {finding['severity']} [{finding['mode']}] {finding['dimension']}:{finding['code']}")
+                _print(f"    observation: {finding['observation']}")
+                _print(f"    fix: {finding['fix']}")
+            if args.out:
+                _print(f"receipt: {payload['receipt_path']}")
+        if args.challenge and not payload["challenge"]["passed"]:
+            raise SystemExit(1)
+        if args.strict and not payload["strict_passed"]:
+            raise SystemExit(1)
         return
 
     if args.cmd == "workflows":

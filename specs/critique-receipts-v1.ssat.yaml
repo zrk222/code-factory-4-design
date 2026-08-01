@@ -1,0 +1,35 @@
+name: critique-receipts-v1
+language: python
+modules:
+  - name: critique
+    path: prestige_design/critique.py
+    functions:
+      - name: critique_html
+        args: [html, css]
+        returns: dict
+      - name: write_critique_receipt
+        args: [payload, output]
+        returns: Path
+      - name: challenge_critique
+        args: [html, css]
+        returns: dict
+dependencies: []
+invariants:
+  - name: critique_has_no_network_or_process_authority
+    forbid_pattern: "\\b(?:subprocess|requests|httpx|urllib|socket|openai)\\b"
+    scopes:
+      - module: critique
+        symbol: critique_html
+        max_lines: 95
+  - name: critique_receipt_is_atomic_and_local
+    forbid_pattern: "\\b(?:requests|httpx|urllib|socket|publish|deploy|send_message)\\b"
+    scopes:
+      - module: critique
+        symbol: write_critique_receipt
+        max_lines: 25
+  - name: critique_challenge_is_bounded
+    forbid_pattern: "\\b(?:subprocess|requests|httpx|urllib|socket)\\b"
+    scopes:
+      - module: critique
+        symbol: challenge_critique
+        max_lines: 75

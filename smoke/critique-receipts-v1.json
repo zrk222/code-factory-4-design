@@ -1,0 +1,12 @@
+{
+  "checks": [
+    {
+      "name": "critique-receipt-behavior",
+      "kind": "python",
+      "run": "from prestige_design.critique import critique_html, challenge_critique; r=critique_html('<html><body><h1>Proof</h1></body></html>', 'body { display: grid; gap: 16px; }'); assert r['schema']=='prestige.critique.v1' and len(r['dimensions'])==7; c=challenge_critique('<h1>Proof</h1>', 'body { display: grid; }'); assert c['passed'] and c['mutants_killed']==7",
+      "expect_exit": 0,
+      "timeout_s": 60,
+      "must_fail_on_stub": true
+    }
+  ]
+}

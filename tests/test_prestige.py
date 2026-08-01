@@ -433,7 +433,13 @@ def test_cli_invalid_contract_shows_diagnostic_and_exits_nonzero(tmp_path, capsy
 def test_runtime_version_matches_the_release():
     import prestige_design
 
-    assert prestige_design.__version__ == "0.7.4"
+    assert prestige_design.__version__ == "0.8.0"
+
+
+def test_ci_deduplicates_push_and_pr_for_the_same_head_sha():
+    workflow = (ROOT / ".github" / "workflows" / "ci.yaml").read_text(encoding="utf-8")
+    assert "group: prestige-ci-${{ github.event.pull_request.head.sha || github.sha }}" in workflow
+    assert "cancel-in-progress: true" in workflow
 
 
 def test_verify_tokens_kills_every_exercised_token(tmp_path):
