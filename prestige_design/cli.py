@@ -105,6 +105,15 @@ def main(argv=None):
     purpose_cmd.add_argument("--json", action="store_true")
     purpose_cmd.add_argument("--strict", action="store_true")
 
+    emotion = sub.add_parser("emotion", help="audit ethical emotional design, safe failure, agency, and inclusion")
+    emotion.add_argument("file")
+    emotion.add_argument("--css", default=None)
+    emotion.add_argument("--intent", default="confidence", choices=["calm", "confidence", "momentum", "delight", "belonging"])
+    emotion.add_argument("--challenge", action="store_true", help="prove coercion and accessibility mutants are rejected")
+    emotion.add_argument("--out", default=None, help="atomically write the emotional-design receipt")
+    emotion.add_argument("--json", action="store_true")
+    emotion.add_argument("--strict", action="store_true", help="exit nonzero when the emotional-design gate does not pass")
+
     theme = sub.add_parser("theme", help="compile an opinionated purpose-driven Visual DNA contract")
     theme.add_argument("purpose", choices=["developer", "healthcare", "fintech", "luxury", "marketplace", "saas", "editorial"])
     theme.add_argument("--out", default=None)
@@ -425,6 +434,38 @@ def main(argv=None):
                     _print(f"  {i}. {rec}")
         if args.strict and not rep.passed:
             sys.exit(1)
+        return
+
+    if args.cmd == "emotion":
+        from .emotional import audit_emotional_design, challenge_emotional_design, write_emotional_receipt
+
+        html = Path(args.file).read_text(encoding="utf-8")
+        css = Path(args.css).read_text(encoding="utf-8") if args.css else ""
+        rep = audit_emotional_design(html, css, intent=args.intent)
+        payload = rep.to_dict()
+        if args.challenge:
+            payload["challenge"] = challenge_emotional_design(html, css, intent=args.intent)
+            if payload["challenge"]["passed"]:
+                payload["markers"].append("EMOTIONAL_MUTATIONS_REJECTED")
+        if args.out:
+            payload["markers"].append("EMOTIONAL_RECEIPT_ATOMIC")
+            payload["receipt_path"] = str(write_emotional_receipt(payload, Path(args.out)))
+        if args.json:
+            print(json.dumps(payload, indent=2))
+        else:
+            verdict = "PASS" if rep.passed else "BLOCK"
+            _print(f"Prestige emotional design: {verdict} ({rep.overall}/100; intent={rep.intent})")
+            _print("  " + "  ".join(f"{key}:{value}" for key, value in rep.scores.items()))
+            for finding in rep.findings:
+                _print(f"  {finding.severity} {finding.dimension}:{finding.code} - {finding.observation}")
+                _print(f"    fix: {finding.fix}")
+            for index, recommendation in enumerate(rep.recommendations[:8], 1):
+                _print(f"  {index}. {recommendation}")
+            if args.out:
+                _print(f"receipt: {payload['receipt_path']}")
+        challenge_failed = args.challenge and not payload["challenge"]["passed"]
+        if challenge_failed or (args.strict and not rep.passed):
+            raise SystemExit(1)
         return
 
     if args.cmd == "brief":

@@ -7,6 +7,17 @@ from pathlib import Path
 from .purpose import PROFILES
 
 
+EMOTIONAL_INTENTS = {
+    "developer": "confidence",
+    "healthcare": "calm",
+    "fintech": "confidence",
+    "luxury": "delight",
+    "marketplace": "confidence",
+    "saas": "momentum",
+    "editorial": "belonging",
+}
+
+
 PSYCHOLOGY = {
     "developer": ["proof before persuasion", "low-friction scanning", "copy must survive technical skepticism"],
     "healthcare": ["calm reduces anxiety", "privacy and consent must be visible", "avoid urgency that feels coercive"],
@@ -27,6 +38,9 @@ class DesignBrief:
     anti_patterns: list[str]
     sections: list[str]
     verification: list[str]
+    emotional_intent: str
+    emotional_journey: list[str]
+    ethical_guardrails: list[str]
 
     def to_dict(self) -> dict:
         return {
@@ -37,6 +51,9 @@ class DesignBrief:
             "anti_patterns": self.anti_patterns,
             "sections": self.sections,
             "verification": self.verification,
+            "emotional_intent": self.emotional_intent,
+            "emotional_journey": self.emotional_journey,
+            "ethical_guardrails": self.ethical_guardrails,
         }
 
 
@@ -54,6 +71,7 @@ def compile_brief(source: Path | None = None, *, purpose: str = "developer") -> 
     directives = list(profile.directives)
     if source_hint:
         directives.insert(0, source_hint)
+    emotional_intent = EMOTIONAL_INTENTS.get(profile.key, "confidence")
     return DesignBrief(
         purpose=profile.key,
         profile=profile.name,
@@ -69,7 +87,23 @@ def compile_brief(source: Path | None = None, *, purpose: str = "developer") -> 
         verification=[
             f"prestige score <file> --workflow product --purpose {profile.key}",
             f"prestige purpose <file> --purpose {profile.key}",
+            f"prestige emotion <file> --intent {emotional_intent} --challenge --strict",
             "capture desktop and mobile screenshots before claiming polish",
+        ],
+        emotional_intent=emotional_intent,
+        emotional_journey=[
+            "entry: establish the intended feeling and one legible next action",
+            "action: minimize friction while preserving informed choice",
+            "feedback: name active state and truthful progress immediately",
+            "recovery: explain failure without blame and preserve a way forward",
+            "completion: provide confirmation, evidence, and a useful next step",
+            "return: preserve continuity without guilt, artificial loss, or compulsion",
+        ],
+        ethical_guardrails=[
+            "no shame, guilt, confirm-shaming, fake scarcity, or punitive streak loss",
+            "predictable rewards and explicit opt-in; never manufacture variable-reward compulsion",
+            "disclose AI authorship and keep review, edit, reject, cancel, and revert controls",
+            "respect reduced-motion preferences and never encode critical state with color alone",
         ],
     )
 
@@ -83,6 +117,12 @@ def render_brief(brief: DesignBrief) -> str:
         "",
         "## Directives",
         *[f"- {item}" for item in brief.directives],
+        "",
+        f"## Emotional Intent: {brief.emotional_intent}",
+        *[f"- {item}" for item in brief.emotional_journey],
+        "",
+        "## Ethical Guardrails",
+        *[f"- {item}" for item in brief.ethical_guardrails],
         "",
         "## Anti-Patterns",
         *[f"- {item}" for item in brief.anti_patterns],

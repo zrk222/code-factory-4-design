@@ -1,0 +1,12 @@
+{
+  "checks": [
+    {
+      "name": "emotional-design-receipt-and-challenge",
+      "kind": "python",
+      "run": "from pathlib import Path; from prestige_design.emotional import audit_emotional_design, challenge_emotional_design; h=Path('references/emotional-journey.html').read_text(encoding='utf-8'); r=audit_emotional_design(h, intent='confidence'); assert r.passed and r.to_dict()['schema']=='prestige.emotional-design.v1' and len(r.scores)==6; c=challenge_emotional_design(h, intent='confidence'); assert c['passed'] and c['mutants_killed']==3",
+      "expect_exit": 0,
+      "timeout_s": 60,
+      "must_fail_on_stub": true
+    }
+  ]
+}

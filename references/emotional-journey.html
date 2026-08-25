@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Evidence review</title>
+  <style>
+    :root {
+      --ink: #172033;
+      --muted: #51606f;
+      --surface: #f7fbfa;
+      --card: #ffffff;
+      --accent: #28666e;
+      --warning: #8a4b08;
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); background: var(--surface); font: 16px/1.7 system-ui, sans-serif; }
+    main { display: grid; gap: 2rem; max-width: 72rem; margin: auto; padding: 6rem 8vw; }
+    .hero, .panel { padding: 3rem; border-radius: var(--radius); background: var(--card); }
+    .hero { background: linear-gradient(135deg, #e7f4f1, #f7fbfa); }
+    h1 { max-width: 16ch; margin: 0; font-size: clamp(2.4rem, 6vw, 5rem); font-weight: 750; line-height: 1.05; }
+    .controls { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 2rem; }
+    button { min-height: 44px; padding: .8rem 1.2rem; border: 2px solid var(--accent); border-radius: 999px; background: transparent; color: var(--accent); font: inherit; font-weight: 700; }
+    .primary { background: var(--accent); color: white; transition: transform .2s ease, box-shadow .2s ease; }
+    .primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgb(40 102 110 / 20%); }
+    .error { border-left: 5px solid var(--warning); }
+    progress { width: 100%; accent-color: var(--accent); }
+    @media (max-width: 768px) { main { padding: 3rem 5vw; } .hero, .panel { padding: 1.5rem; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
+  </style>
+</head>
+<body>
+  <main data-emotion-intent="confidence" data-journey-stage="review">
+    <section class="hero">
+      <p>Evidence review · 2 of 3 checks complete</p>
+      <h1>Know what changed before you approve it.</h1>
+      <p>This automated suggestion is labeled and reversible. Review the evidence, edit the proposal, or cancel without losing progress.</p>
+      <div class="controls">
+        <button class="primary">Approve verified change</button>
+        <button>Edit proposal</button>
+        <button>Cancel</button>
+      </div>
+    </section>
+    <section class="panel" aria-labelledby="progress-title">
+      <h2 id="progress-title">Verification progress</h2>
+      <div role="status" aria-live="polite">Checking integration evidence...</div>
+      <progress value="2" max="3">2 of 3 checks complete</progress>
+    </section>
+    <section class="panel error" role="alert">
+      <h2>One check needs attention</h2>
+      <p>Your reviewed work is saved. Nothing has been applied.</p>
+      <div class="controls"><button>Review details</button><button>Try again</button></div>
+    </section>
+    <section class="panel success">
+      <h2>Review complete</h2>
+      <p>Your receipt is saved with the evidence summary and next step. Continue from recent activity whenever you are ready.</p>
+    </section>
+  </main>
+</body>
+</html>

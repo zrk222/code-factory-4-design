@@ -293,6 +293,10 @@ def test_design_brief_compiles_developer_psychology(tmp_path):
     assert any("proof" in item for item in brief.psychology)
     assert "Lead with install" in rendered
     assert "prestige score" in rendered
+    assert brief.emotional_intent == "confidence"
+    assert "Safe failure" not in rendered  # journey language stays concrete, not taxonomy-heavy
+    assert "prestige emotion" in rendered
+    assert "no shame" in rendered
 
 
 def test_cli_brief_json(tmp_path, capsys):
@@ -433,7 +437,7 @@ def test_cli_invalid_contract_shows_diagnostic_and_exits_nonzero(tmp_path, capsy
 def test_runtime_version_matches_the_release():
     import prestige_design
 
-    assert prestige_design.__version__ == "0.8.0"
+    assert prestige_design.__version__ == "0.9.0"
 
 
 def test_ci_deduplicates_push_and_pr_for_the_same_head_sha():

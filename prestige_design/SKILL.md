@@ -33,7 +33,9 @@ conversion claims require the project's own experiment or analytics receipt.
    Treat deterministic P1/P2 findings as blocking and confidence-labelled
    heuristics as review prompts, not conversion or accessibility claims. Then
    run `prestige render-audit <file.html>` and
-   `prestige challenge <file.html>`. When the project has a committed
+   `prestige challenge <file.html>`. For any primary journey, run `prestige
+   emotion <file.html> --intent <key> --challenge --strict --out
+   .prestige/emotional-design.json`. When the project has a committed
    `DESIGN.md`, run `prestige tokens lint <file.html> --strict` and
    `prestige verify-tokens <file.html>`. For adoption, use `prestige init
    --root .` to propose a reviewable contract, then `prestige pr` to write
@@ -43,6 +45,30 @@ conversion claims require the project's own experiment or analytics receipt.
    --purpose <key>` or include `--purpose <key>` in `prestige score`. Workflows
    decide what the page optimizes for; purpose lenses decide whether the visual
    strategy fits the audience psychology and job.
+5. **Emotional journey** — declare one intended feeling (`calm`, `confidence`,
+   `momentum`, `delight`, or `belonging`) and design the full sequence: entry,
+   action, feedback, recovery, completion, and return. Static checks verify
+   explicit signals only; user feeling requires product-specific research.
+
+## Ethical Emotional Architecture
+
+- **Visceral:** use coherent type, color, proportion, and rhythm to establish
+  the intended feeling immediately. Never claim a color causes a universal
+  emotion; cultural interpretation and context vary.
+- **Behavioral:** name active state, show truthful progress, and keep feedback
+  close to the action. Do not use an unexplained disabled button or spinner.
+- **Reflective:** finish with confirmation, evidence, continuity, and a useful
+  next step so the user can understand what their action achieved.
+- **Safe failure:** explain what happened without blame, preserve progress, and
+  offer retry, edit, revert, back, or support.
+- **Agency:** disclose AI-generated or automated output and preserve review,
+  edit, reject, cancel, pause, and revert controls appropriate to the risk.
+- **Inclusion:** respect reduced-motion settings and pair color with text,
+  iconography, and shape. Native haptics/audio require real-device validation.
+
+The following are blocking anti-patterns, not engagement recommendations:
+shame or guilt, confirm-shaming, preselected consent, fake scarcity, variable
+rewards designed for compulsion, punitive streak loss, and hidden automation.
 
 ## The Five Laws (apply every time)
 

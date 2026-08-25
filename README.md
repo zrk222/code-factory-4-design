@@ -10,6 +10,29 @@ the agent can *verify* its output against the principles, not just intend them.
 > browser gates. It refuses to let a polished page ship over a broken action,
 > a hidden surface, or a violated committed token contract.
 
+## New in 0.9.0: ethical emotional-design proof
+
+Prestige now turns an intended feeling into a reviewable journey instead of a
+vague mood-board instruction. The new gate covers immediate visual confidence,
+in-flow feedback, meaningful completion, safe failure, user agency, and
+inclusive sensory behavior:
+
+```bash
+prestige brief PRD.md --purpose saas --out DESIGN_BRIEF.md
+prestige emotion app.html --intent momentum --challenge --strict \
+  --out .prestige/emotional-design.json
+```
+
+The gate fails closed on observable coercion and trust failures: shaming copy,
+preselected consent, confirm-shaming, fake scarcity markers, dead-end errors,
+hidden AI authorship, color-only critical state, and motion without a
+`prefers-reduced-motion` alternative. Its receipt is source-hash bound and
+mutation-tested. It does **not** claim that static source proves emotion,
+retention, conversion, accessibility conformance, or haptic quality.
+
+See [Ethical Emotional Design](docs/EMOTIONAL_DESIGN.md) for the adopted
+psychology, rejected dark patterns, device-evidence boundary, and operating loop.
+
 ## New in 0.8.0: seven-lens critique receipts
 
 `prestige critique` turns visual review into a compact, machine-readable
@@ -97,6 +120,7 @@ prestige scaffold site.html        # premium starter (scores 100/100)
 prestige brief PRD.md --purpose developer # opinionated design brief before UI work
 prestige audit site.html           # score the five laws + catch Horn-Effect triggers
 prestige purpose site.html --purpose developer  # opinionated purpose-fit audit
+prestige emotion site.html --intent confidence --challenge --strict
 prestige audit site.html --strict  # exit 1 if failing — use as an agent/CI gate
 ```
 
