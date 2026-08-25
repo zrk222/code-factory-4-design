@@ -1,0 +1,12 @@
+{
+  "schema": "specline.intent-envelope.v1",
+  "feature": "emotional-design-v1",
+  "status": "sealed",
+  "coherence_score": 100,
+  "assumptions": [],
+  "intent": "Add an ethical, deterministic emotional-design proof layer to Prestige without inferring user emotion or making unverified outcome claims.",
+  "spec_path": "specs/emotional-design-v1.md",
+  "spec_sha256": "9751b0e63a5bfae7cb1e4281ea79226f15e8bb2d3ce88ac590563fad7bc244ed",
+  "sealed_hash": "0065f88191f15a35723275c9938715538f19655a94668aa6e648ecf1f9dfb8bd",
+  "seal_algorithm": "sha256(canonical-json-without-sealed-hash-and-seal-algorithm)"
+}
