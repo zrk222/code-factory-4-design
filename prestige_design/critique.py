@@ -283,7 +283,12 @@ def _typography(style: str) -> list[CritiqueFinding]:
             "Use at least 16px for body and form-control text; reserve smaller sizes for nonessential labels.",
             {"minimum_font_px": min(sizes), "threshold_px": 16},
         ))
-    line_heights = [float(value) for value in re.findall(r"line-height\s*:\s*(\d+(?:\.\d+)?)(?!\s*(?:px|rem|em|%))", style, re.I)]
+    line_height_values = re.findall(r"line-height\s*:\s*([^;}]+)", style, re.I)
+    line_heights = [
+        float(match.group(1))
+        for value in line_height_values
+        if (match := re.fullmatch(r"\s*((?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?)(?:\s*!important)?\s*", value, re.I))
+    ]
     if line_heights and min(line_heights) < 1.5:
         findings.append(_finding(
             "typography", "TYPE_LEADING_TIGHT", "P2", "deterministic",

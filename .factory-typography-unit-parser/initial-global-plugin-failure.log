@@ -1,0 +1,67 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\rkatz\AppData\Local\Programs\Python\Python311\Lib\site-packages\pytest\__main__.py", line 9, in <module>
+    raise SystemExit(pytest.console_main())
+                     ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rkatz\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\config\__init__.py", line 223, in console_main
+    code = main()
+           ^^^^^^
+  File "C:\Users\rkatz\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\config\__init__.py", line 193, in main
+    config = _prepareconfig(new_args, plugins)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rkatz\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\config\__init__.py", line 361, in _prepareconfig
+    config: Config = pluginmanager.hook.pytest_cmdline_parse(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rkatz\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512, in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rkatz\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120, in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rkatz\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 167, in _multicall
+    raise exception
+  File "C:\Users\rkatz\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 139, in _multicall
+    teardown.throw(exception)
+  File "C:\Users\rkatz\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\helpconfig.py", line 124, in pytest_cmdline_parse
+    config = yield
+             ^^^^^
+  File "C:\Users\rkatz\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121, in _multicall
+    res = hook_impl.function(*args)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rkatz\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\config\__init__.py", line 1186, in pytest_cmdline_parse
+    self.parse(args)
+  File "C:\Users\rkatz\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\config\__init__.py", line 1539, in parse
+    self.pluginmanager.load_setuptools_entrypoints("pytest11")
+  File "C:\Users\rkatz\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 416, in load_setuptools_entrypoints
+    plugin = ep.load()
+             ^^^^^^^^^
+  File "C:\Users\rkatz\AppData\Local\Programs\Python\Python311\Lib\importlib\metadata\__init__.py", line 202, in load
+    module = import_module(match.group('module'))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rkatz\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1204, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1176, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1126, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "<frozen importlib._bootstrap>", line 1204, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1176, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1147, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 690, in _load_unlocked
+  File "C:\Users\rkatz\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\assertion\rewrite.py", line 197, in exec_module
+    exec(co, module.__dict__)
+  File "C:\Users\rkatz\AppData\Local\Programs\Python\Python311\Lib\site-packages\anchorpy\__init__.py", line 6, in <module>
+    from anchorpy import error, utils
+  File "C:\Users\rkatz\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\assertion\rewrite.py", line 197, in exec_module
+    exec(co, module.__dict__)
+  File "C:\Users\rkatz\AppData\Local\Programs\Python\Python311\Lib\site-packages\anchorpy\utils\__init__.py", line 2, in <module>
+    from anchorpy.utils import rpc, token
+  File "C:\Users\rkatz\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\assertion\rewrite.py", line 197, in exec_module
+    exec(co, module.__dict__)
+  File "C:\Users\rkatz\AppData\Local\Programs\Python\Python311\Lib\site-packages\anchorpy\utils\token.py", line 12, in <module>
+    from spl.token._layouts import ACCOUNT_LAYOUT, MINT_LAYOUT
+  File "C:\Users\rkatz\AppData\Local\Programs\Python\Python311\Lib\site-packages\spl\token\_layouts.py", line 5, in <module>
+    from construct import Bytes, Int8ul, Int32ul, Int64ul, Pass, Switch
+ImportError: cannot import name 'Int8ul' from 'construct' (C:\Users\rkatz\AppData\Roaming\Python\Python311\site-packages\construct\__init__.py)

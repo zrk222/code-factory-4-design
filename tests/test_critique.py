@@ -70,6 +70,18 @@ def test_heuristics_carry_bounded_confidence_and_never_block_alone():
     assert result["passed"] is True
 
 
+@pytest.mark.parametrize("line_height", ["18px", "13px", "26px", "1.2em", "1.6rem", "0.9rem", "150%", "calc(1.2)", "var(--leading)"])
+def test_unit_based_line_heights_are_not_misread_as_unitless(line_height):
+    result = critique_html(GOOD_HTML, f"p{{line-height:{line_height}}}")
+    assert not any(item["code"] == "TYPE_LEADING_TIGHT" for item in result["findings"])
+
+
+@pytest.mark.parametrize("line_height, expected", [(".9", True), ("1.", True), ("1e0", True), ("1.2", True), ("1.2e0", True), ("1.2 !important", True), ("1.5", False), ("1.6", False), ("1.5e0", False)])
+def test_unitless_line_height_threshold_is_preserved(line_height, expected):
+    result = critique_html(GOOD_HTML, f"p{{line-height:{line_height}}}")
+    assert any(item["code"] == "TYPE_LEADING_TIGHT" for item in result["findings"]) is expected
+
+
 def test_missing_contracts_are_explicit_and_not_invented():
     result = critique_html(GOOD_HTML)
     assert [item["status"] for item in result["contracts"]] == ["missing", "missing", "missing"]

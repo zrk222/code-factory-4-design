@@ -1,0 +1,117 @@
+{
+  "schema": "factory.workflow-audit.contract.v1",
+  "project_id": "prestige-typography-unit-parser",
+  "candidate": [
+    {
+      "path": "prestige_design/critique.py",
+      "sha256": "c40bfc7ec83d5fb0fb47ea4c3f8b8bef12330b81ea224d1e437f992c2b4d71f9",
+      "kind": "source"
+    },
+    {
+      "path": "tests/test_critique.py",
+      "sha256": "c42f0789e0f3e3a32b283a8e75a1f3cc44f845b5c09068647dc800ae3975da74",
+      "kind": "test"
+    },
+    {
+      "path": ".factory-typography-unit-parser/plan.md",
+      "sha256": "f861393902dc752ce0f242e59bfbcf021afa6eab9401821b39fd9bb9b4bae6bb",
+      "kind": "spec"
+    }
+  ],
+  "applicability": [
+    {
+      "category": "happy_path",
+      "applicable": true,
+      "reason": "Dimensioned px/em/rem/% and non-literal calc()/var() values are never parsed as unitless leading, including 18px, 13px, 26px and 0.9rem."
+    },
+    {
+      "category": "validation",
+      "applicable": true,
+      "reason": "CSS unitless number forms .9, 1., 1e0, 1.2, 1.2e0 are tight; 1.5, 1.6 and 1.5e0 meet the threshold; !important is supported."
+    },
+    {
+      "category": "failure_recovery",
+      "applicable": true,
+      "reason": "Non-numeric CSS values are ignored without raising or manufacturing a unitless finding."
+    },
+    {
+      "category": "accessibility",
+      "applicable": true,
+      "reason": "The deterministic readability warning remains for tight unitless leading and is absent for dimensional values."
+    },
+    {
+      "category": "state_consistency",
+      "applicable": false,
+      "reason": "The parser is a pure function and introduces no persistent or cross-call state.",
+      "review_evidence": {
+        "path": ".factory-typography-unit-parser/review.md",
+        "sha256": "c7ea9638c743a6769829832b232ab9c0422fc6850133edd212ea5de81f2d6715",
+        "kind": "review"
+      }
+    },
+    {
+      "category": "security_privacy",
+      "applicable": false,
+      "reason": "The change only parses a supplied CSS string; it adds no inputs, storage, disclosure, or security-sensitive behavior.",
+      "review_evidence": {
+        "path": ".factory-typography-unit-parser/review.md",
+        "sha256": "c7ea9638c743a6769829832b232ab9c0422fc6850133edd212ea5de81f2d6715",
+        "kind": "review"
+      }
+    },
+    {
+      "category": "performance",
+      "applicable": false,
+      "reason": "The bounded regex scan is a local small-string classifier; this fix changes no algorithmic complexity or runtime profile.",
+      "review_evidence": {
+        "path": ".factory-typography-unit-parser/review.md",
+        "sha256": "c7ea9638c743a6769829832b232ab9c0422fc6850133edd212ea5de81f2d6715",
+        "kind": "review"
+      }
+    },
+    {
+      "category": "external_effects",
+      "applicable": false,
+      "reason": "The parser performs no network, provider, filesystem, billing, publishing, or deployment actions.",
+      "review_evidence": {
+        "path": ".factory-typography-unit-parser/review.md",
+        "sha256": "c7ea9638c743a6769829832b232ab9c0422fc6850133edd212ea5de81f2d6715",
+        "kind": "review"
+      }
+    }
+  ],
+  "checks": [
+    {
+      "id": "complete_css_value",
+      "requirement": "Dimensioned px/em/rem/% and non-literal calc()/var() values are never parsed as unitless leading, including 18px, 13px, 26px and 0.9rem.",
+      "category": "happy_path",
+      "profiles": [
+        "Windows x64, CPython 3.11.9, offline, pytest with PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 and pytest_asyncio plugin explicitly enabled"
+      ]
+    },
+    {
+      "id": "unitless_threshold",
+      "requirement": "CSS unitless number forms .9, 1., 1e0, 1.2, 1.2e0 are tight; 1.5, 1.6 and 1.5e0 meet the threshold; !important is supported.",
+      "category": "validation",
+      "profiles": [
+        "Windows x64, CPython 3.11.9, offline, pytest with PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 and pytest_asyncio plugin explicitly enabled"
+      ]
+    },
+    {
+      "id": "invalid_or_complex_values",
+      "requirement": "Non-numeric CSS values are ignored without raising or manufacturing a unitless finding.",
+      "category": "failure_recovery",
+      "profiles": [
+        "Windows x64, CPython 3.11.9, offline, pytest with PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 and pytest_asyncio plugin explicitly enabled"
+      ]
+    },
+    {
+      "id": "accessible_leading_rule",
+      "requirement": "The deterministic readability warning remains for tight unitless leading and is absent for dimensional values.",
+      "category": "accessibility",
+      "profiles": [
+        "Windows x64, CPython 3.11.9, offline, pytest with PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 and pytest_asyncio plugin explicitly enabled"
+      ]
+    }
+  ]
+}

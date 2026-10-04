@@ -1,0 +1,87 @@
+{
+  "schema": "factory.workflow-audit.observations.v1",
+  "contract_sha256": "c8b89105105e712ec06009c296c8e21daee9eb3143c56df4f425cab827be4cf2",
+  "candidate_sha256": "a23e8fb55a4225d623a078376c305eb4b59ab40f6374a1d9f50f3ce4b842c923",
+  "observations": [
+    {
+      "id": "complete_css_value",
+      "profile": "Windows x64, CPython 3.11.9, offline, pytest with PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 and pytest_asyncio plugin explicitly enabled",
+      "status": "PASS",
+      "reason": "The 88-test critique and Prestige run passes dimensional and calc/var exclusion cases against final LF source bytes.",
+      "execution_identity": "Windows x64 CPython 3.11.9; pytest -p pytest_asyncio.plugin -q tests/test_critique.py tests/test_prestige.py; plugin autoload disabled; offline",
+      "observed_at": "2026-10-04T07:57:02.674070+00:00",
+      "artifacts": [
+        {
+          "path": ".factory-typography-unit-parser/full-tests.log",
+          "sha256": "09f85d72a3e526843b636bbf9a84fbc1c6a4cea52eb0417f6b6bbb21c208d994",
+          "kind": "log"
+        },
+        {
+          "path": ".factory-typography-unit-parser/review.md",
+          "sha256": "c7ea9638c743a6769829832b232ab9c0422fc6850133edd212ea5de81f2d6715",
+          "kind": "review"
+        }
+      ]
+    },
+    {
+      "id": "unitless_threshold",
+      "profile": "Windows x64, CPython 3.11.9, offline, pytest with PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 and pytest_asyncio plugin explicitly enabled",
+      "status": "PASS",
+      "reason": "The same run passes leading-dot, trailing-dot, integer/exponent and decimal threshold cases, including .9 and 1.2e0 warnings and 1.5e0 acceptance.",
+      "execution_identity": "Windows x64 CPython 3.11.9; pytest -p pytest_asyncio.plugin -q tests/test_critique.py tests/test_prestige.py; plugin autoload disabled; offline",
+      "observed_at": "2026-10-04T07:57:02.674070+00:00",
+      "artifacts": [
+        {
+          "path": ".factory-typography-unit-parser/full-tests.log",
+          "sha256": "09f85d72a3e526843b636bbf9a84fbc1c6a4cea52eb0417f6b6bbb21c208d994",
+          "kind": "log"
+        },
+        {
+          "path": ".factory-typography-unit-parser/review.md",
+          "sha256": "c7ea9638c743a6769829832b232ab9c0422fc6850133edd212ea5de81f2d6715",
+          "kind": "review"
+        }
+      ]
+    },
+    {
+      "id": "invalid_or_complex_values",
+      "profile": "Windows x64, CPython 3.11.9, offline, pytest with PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 and pytest_asyncio plugin explicitly enabled",
+      "status": "PASS",
+      "reason": "The same run passes calc()/var() cases without exceptions or false unitless findings.",
+      "execution_identity": "Windows x64 CPython 3.11.9; pytest -p pytest_asyncio.plugin -q tests/test_critique.py tests/test_prestige.py; plugin autoload disabled; offline",
+      "observed_at": "2026-10-04T07:57:02.674070+00:00",
+      "artifacts": [
+        {
+          "path": ".factory-typography-unit-parser/full-tests.log",
+          "sha256": "09f85d72a3e526843b636bbf9a84fbc1c6a4cea52eb0417f6b6bbb21c208d994",
+          "kind": "log"
+        },
+        {
+          "path": ".factory-typography-unit-parser/review.md",
+          "sha256": "c7ea9638c743a6769829832b232ab9c0422fc6850133edd212ea5de81f2d6715",
+          "kind": "review"
+        }
+      ]
+    },
+    {
+      "id": "accessible_leading_rule",
+      "profile": "Windows x64, CPython 3.11.9, offline, pytest with PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 and pytest_asyncio plugin explicitly enabled",
+      "status": "PASS",
+      "reason": "The deterministic readability rule remains exercised by explicit tight/acceptable numeric-form assertions; no markup/accessibility contract changed.",
+      "execution_identity": "Windows x64 CPython 3.11.9; pytest -p pytest_asyncio.plugin -q tests/test_critique.py tests/test_prestige.py; plugin autoload disabled; offline",
+      "observed_at": "2026-10-04T07:57:02.674070+00:00",
+      "artifacts": [
+        {
+          "path": ".factory-typography-unit-parser/full-tests.log",
+          "sha256": "09f85d72a3e526843b636bbf9a84fbc1c6a4cea52eb0417f6b6bbb21c208d994",
+          "kind": "log"
+        },
+        {
+          "path": ".factory-typography-unit-parser/review.md",
+          "sha256": "c7ea9638c743a6769829832b232ab9c0422fc6850133edd212ea5de81f2d6715",
+          "kind": "review"
+        }
+      ]
+    }
+  ]
+}

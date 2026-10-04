@@ -1,0 +1,5 @@
+# Review
+
+The old negative lookahead followed a backtrackable number capture. A value such as `18px` could backtrack to `1` and satisfy the negative lookahead. The parser now captures the declaration value and accepts it as unitless only when the full value (optionally with `!important`) matches CSS numeric syntax, including leading-dot decimals, trailing decimal points, and signed exponents. This preserves the public finding fields and small-text check.
+
+Regression coverage checks `18px`, `13px`, `26px`, `1.2em`, `1.6rem`, `0.9rem` and `150%` are excluded from the unitless threshold; `.9`, `1.`, `1e0`, `1.2` and `1.2e0` emit `TYPE_LEADING_TIGHT`; `1.5`, `1.6` and `1.5e0` do not. Existing critique tests cover receipt shape, strict findings and text-size behavior. No external effects are performed by this parser change. The test suite is offline and ran with Python 3.11.9 on Windows after disabling unrelated global pytest plugin autoload; first unfiltered attempt and exact failure are retained in focused.log.
