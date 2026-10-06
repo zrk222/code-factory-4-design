@@ -179,7 +179,27 @@ def _plain(html: str) -> str:
 
 
 def _count_terms(text: str, terms: tuple[str, ...]) -> int:
-    return sum(1 for term in terms if re.search(rf"\b{re.escape(term.lower())}\b", text))
+    count = 0
+    for term in terms:
+        needle = term.lower()
+        start_is_word = needle[0].isalnum() or needle[0] == "_"
+        end_is_word = needle[-1].isalnum() or needle[-1] == "_"
+        position = text.find(needle)
+        while position >= 0:
+            before_is_word = (
+                text[position - 1].isalnum() or text[position - 1] == "_"
+                if position
+                else False
+            )
+            end = position + len(needle)
+            after_is_word = (
+                text[end].isalnum() or text[end] == "_" if end < len(text) else False
+            )
+            if before_is_word != start_is_word and after_is_word != end_is_word:
+                count += 1
+                break
+            position = text.find(needle, position + 1)
+    return count
 
 
 def _extract_ctas(html: str) -> list[str]:

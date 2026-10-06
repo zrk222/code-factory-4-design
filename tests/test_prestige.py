@@ -1,4 +1,6 @@
-import sys, subprocess
+import re
+import subprocess
+import sys
 from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -95,7 +97,13 @@ from prestige_design.cta_hooks import verify_cta_and_hooks
 from prestige_design.mobile_judge import judge_mobile
 from prestige_design.score import score_design
 from prestige_design.workflows import get_workflow, list_workflows
-from prestige_design.purpose import audit_purpose, infer_purpose, list_purposes
+from prestige_design.purpose import (
+    PROFILES,
+    _count_terms,
+    audit_purpose,
+    infer_purpose,
+    list_purposes,
+)
 
 OPT = (ROOT/"references"/"premium-template.html").read_text(encoding="utf-8")
 
@@ -208,6 +216,33 @@ def test_purpose_lenses_are_listed():
 
 def test_purpose_inference_detects_developer_tool():
     assert infer_purpose(DEV_GOOD, "") == "developer"
+
+
+def test_optimized_term_count_matches_unicode_regex_boundaries():
+    vocabularies = [
+        profile.intent_terms
+        + profile.trust_terms
+        + profile.proof_terms
+        + profile.visual_terms
+        + profile.cta_terms
+        + profile.anti_terms
+        for profile in PROFILES.values()
+    ]
+    terms = tuple(term for vocabulary in vocabularies for term in vocabulary)
+    terms += ("team", "café", "naïve", "team")
+    samples = (
+        "(" + ", ".join(terms) + ")",
+        "équipe cafe café naïve _team team2 xteam team_ book demo",
+        "x" * 5000 + " team " + "y" * 5000,
+    )
+
+    for text in samples:
+        expected = sum(
+            1
+            for term in terms
+            if re.search(rf"\b{re.escape(term.lower())}\b", text)
+        )
+        assert _count_terms(text, terms) == expected
 
 
 def test_developer_purpose_fit_passes_concrete_product_proof():
