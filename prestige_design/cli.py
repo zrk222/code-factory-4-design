@@ -190,11 +190,28 @@ def main(argv=None):
     install_cmd = sub.add_parser("install", help="install the skill into an agent")
     install_cmd.add_argument("agent")
     install_cmd.add_argument("--root", default=".")
+    install_cmd.add_argument("--skill", choices=("prestige-design", "app-habit-engineer"),
+                             default="prestige-design")
+
+    habit = sub.add_parser("habit-audit", help="audit a six-step habit journey contract")
+    habit.add_argument("contract", help="workspace-relative journey JSON")
+    habit.add_argument("--root", default=".")
+    habit.add_argument("--format", choices=("json", "markdown"), default="json")
+    habit.add_argument("--strict", action="store_true", help="require observed evidence and passing metrics")
+
+    repair = sub.add_parser("habit-remediate", help="preview a structural JSX or TSX habit repair")
+    repair.add_argument("source")
+    repair.add_argument("--root", default=".")
+    repair.add_argument("--apply", action="store_true")
+    repair.add_argument("--expect-sha256", help="original source hash from a reviewed preview")
 
     version = sub.add_parser("version", help="show package provenance")
     version.add_argument("--json", action="store_true")
 
     args = parser.parse_args(argv)
+
+    if args.cmd in ("habit-audit", "habit-remediate"):
+        return _run_habit(args, parser)
 
     if args.cmd == "version":
         from .provenance import provenance
@@ -509,13 +526,35 @@ def main(argv=None):
     elif args.cmd == "install":
         from .adapters import install
 
-        created = install(Path(args.root), args.agent)
+        try:
+            created = install(Path(args.root), args.agent, skill=args.skill)
+        except (OSError, ValueError) as exc:
+            parser.error(str(exc))
         _print("installed skill:\n  " + "\n  ".join(str(c) for c in created))
     elif args.cmd == "scaffold":
         template = Path(__file__).resolve().parent.parent / "references" / "premium-template.html"
         dst = Path(args.out)
         dst.write_text(template.read_text(encoding="utf-8"), encoding="utf-8")
         _print(f"Wrote premium starter -> {dst}\nNext: edit, then `prestige audit {dst}`")
+
+
+def _run_habit(args, parser):
+    root = Path(args.root)
+    try:
+        if args.cmd == "habit-audit":
+            from .habit import habit_audit, habit_markdown
+            report = habit_audit(root, args.contract)
+            print(habit_markdown(report) if args.format == "markdown" else json.dumps(report, indent=2))
+            if args.strict and report["decision"] != "PASS":
+                raise SystemExit(1)
+        else:
+            from .habit_ast import habit_remediate
+            if args.apply != bool(args.expect_sha256):
+                raise ValueError("--apply and --expect-sha256 must be supplied together")
+            report = habit_remediate(root, args.source, args.expect_sha256)
+            print(json.dumps(report, indent=2))
+    except (OSError, ValueError, RecursionError) as exc:
+        parser.error(str(exc))
 
 
 if __name__ == "__main__":
