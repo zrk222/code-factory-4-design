@@ -183,6 +183,8 @@ def test_skill_install_is_idempotent_preserves_local_variant(tmp_path, capsys):
     main(args)
     [path] = install(tmp_path, "codex", skill="app-habit-engineer")
     assert path == tmp_path / ".agents/skills/app-habit-engineer/SKILL.md"
+    recorder = path.with_name("record-journey.mjs")
+    assert "export async function recordJourney" in recorder.read_text(encoding="utf-8")
     for term in (
         "The Itch",
         "The Lazy Thumb",

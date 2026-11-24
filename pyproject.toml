@@ -32,7 +32,7 @@ prestige = "prestige_design.cli:main"
 include = ["prestige_design*"]
 
 [tool.setuptools.package-data]
-prestige_design = ["SKILL.md", "skills/app-habit-engineer/SKILL.md", "../references/*.html", "../references/*.md", "benchmark_cases/*.json", "benchmark_cases/*.html", "benchmark_cases/*.md"]
+prestige_design = ["SKILL.md", "skills/app-habit-engineer/*.md", "skills/app-habit-engineer/*.mjs", "../references/*.html", "../references/*.md", "benchmark_cases/*.json", "benchmark_cases/*.html", "benchmark_cases/*.md"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

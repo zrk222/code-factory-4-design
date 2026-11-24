@@ -241,7 +241,7 @@ def _findings(lens, scores, guards):
     return [code for code, failed in rules.items() if failed]
 
 
-def habit_audit(root: Path, source: str) -> dict:
+def habit_audit(root: Path, source: str, *, captures=None, assets=None) -> dict:
     root = root.resolve()
     raw = bounded(local_path(root, source))
     value = _dict(
@@ -269,10 +269,29 @@ def habit_audit(root: Path, source: str) -> dict:
     app = _text(value["app_name"], "app_name")
     goal = _text(value["core_value_prop"], "core_value_prop")
     evidence = _evidence(root, value)
+    journey = None
+    if captures:
+        from .journey import load_pair
+
+        if mode != "proposal":
+            raise ValueError("Use a proposal contract with separate browser captures")
+        baseline, candidate, journey = load_pair(root, *captures, assets=assets)
+        if baseline["app_name"] != app:
+            raise ValueError("The app name in the captures must match the contract")
+        _booleans(baseline["controls"], GUARDRAILS, "baseline controls")
+        value.update(
+            baseline=baseline["metrics"],
+            candidate=candidate["metrics"],
+            controls=candidate["controls"],
+        )
+        evidence = evidence + list(journey["captures"].values())
+        mode = "observed"
     before, after = map(_metrics, (value["baseline"], value["candidate"]))
     _matching_observations(value["baseline"], value["candidate"])
     controls = _booleans(value["controls"], GUARDRAILS, "controls")
     findings = _findings(lens, after, controls)
+    if journey and any(step["failed"] for step in journey["checkpoints"]):
+        findings.append("JOURNEY_CHECKPOINT_FAILED")
     report = {
         "schema": "prestige.habit-audit.v1",
         "app_name": app,
@@ -297,6 +316,8 @@ def habit_audit(root: Path, source: str) -> dict:
         else ("PROPOSED" if mode == "proposal" else "PASS"),
         "evidence_boundary": "Submitted journey observations and artifact hashes. Retention requires a product experiment.",
     }
+    if journey:
+        report["journey"] = journey
     return seal(report)
 
 
@@ -319,6 +340,11 @@ def habit_markdown(report: dict) -> str:
     for key, before in report["baseline"].items():
         after = report["candidate"][key]
         lines.append(f"| {key.upper()} | {before:.2f} | {after:.2f} |")
+    if journey := report.get("journey"):
+        lines += ["", "## Browser journey", "", journey["scope"], ""]
+        for step in journey["checkpoints"]:
+            status = ", ".join(step["failed"]) if step["failed"] else "Pass"
+            lines.append(f"- {step['id']} ({step['state']}) — {status}")
     lines += ["", "## Six mechanics", ""]
     for name, step in report["habit_steps"].items():
         lines.append(f"### {name.replace('_', ' ').title()}")

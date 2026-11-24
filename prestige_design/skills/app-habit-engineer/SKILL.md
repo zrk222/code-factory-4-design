@@ -50,3 +50,7 @@ prestige habit-audit habit.json --strict
 ```
 
 The strict gate requires a recorded observation mode and passing metrics on the supplied contract. Review what the observation artifacts actually establish before promoting a build.
+
+For an app with Playwright tests, import the companion `record-journey.mjs` into the existing test. Run the same checkpoints before and after with matching profile and check IDs. Test what the user does after empty, loading, error and expired-session states. Supply counts and control assessments explicitly. Capture screenshots only when suitable for sharing and mask sensitive controls.
+
+Run `prestige habit-audit habit.json --capture before.json after.json --strict` to evaluate the pair. When using the design PR report, attach the same files with `--journey habit.json before.json after.json`. Use the app's existing components for recovery. Pass its inventory to `prestige brief --purpose saas --components components.json`.

@@ -276,4 +276,4 @@ criterion, its score and threshold, and the unchanged overall verdict.
 
 ## Habit design
 
-Install the App Habit Engineer skill with `prestige install codex --skill app-habit-engineer`. Use `prestige habit-audit` for six-step journey evidence and `prestige habit-remediate` for JSX/TSX structural repairs. [Commands and example](docs/HABIT_ENGINEER.md)
+Install the App Habit Engineer skill with `prestige install codex --skill app-habit-engineer`. Replay your app's existing Playwright tests to audit matched journeys and attach recovery findings to the design PR report. Use `prestige habit-remediate` for JSX/TSX structural repairs and `prestige brief --components` to design with the app's own components. [Commands and example](docs/HABIT_ENGINEER.md)

@@ -41,16 +41,23 @@ def _install_habit(root: Path, agent: str) -> list[Path]:
         "opencode": ".opencode/skills/app-habit-engineer/SKILL.md",
         "cursor": ".cursor/rules/app-habit-engineer.md",
     }.get(agent, "SKILL-app-habit-engineer.md")
-    source = Path(__file__).parent / "skills/app-habit-engineer/SKILL.md"
+    source = Path(__file__).parent / "skills/app-habit-engineer"
     destination = root / relative
-    if not destination.resolve().is_relative_to(root.resolve()):
-        raise ValueError("Skill destination leaves the workspace")
-    data = source.read_bytes()
+    files = {
+        destination: (source / "SKILL.md").read_bytes(),
+        destination.with_name("record-journey.mjs"): (source / "record-journey.mjs").read_bytes(),
+    }
+    for path, data in files.items():
+        if not path.resolve().is_relative_to(root.resolve()):
+            raise ValueError("Skill destination leaves the workspace")
+        if path.exists() and path.read_bytes() != data:
+            raise ValueError("Habit skill already exists with local changes")
     destination.parent.mkdir(parents=True, exist_ok=True)
-    try:
-        with destination.open("xb") as output:
-            output.write(data)
-    except FileExistsError:
-        if destination.read_bytes() != data:
-            raise ValueError("Habit skill already exists with local changes") from None
+    for path, data in files.items():
+        try:
+            with path.open("xb") as output:
+                output.write(data)
+        except FileExistsError:
+            if path.read_bytes() != data:
+                raise ValueError("Habit skill already exists with local changes") from None
     return [destination]

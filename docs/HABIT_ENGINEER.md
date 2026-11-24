@@ -14,6 +14,27 @@ Use the example contract as a template. It is a design proposal. Switch to `obse
 
 Every CTA observation includes a stable `id` and viewport `width` and `height`. Completion samples use stable IDs too. Baseline and candidate must contain the same IDs and viewports. Each contract and referenced observation file is limited to 4 MiB. A passing audit covers the submitted observations. Capture additional onboarding, re-entry, recovery and input profiles in your app's browser suite and attach those artifacts for review.
 
+## Replay your app's Playwright tests
+
+`prestige install codex --skill app-habit-engineer` installs `record-journey.mjs` with the skill. Import it into your existing test and create a recorder with your workspace `root`, a new `output` JSON path in an existing folder, `appName`, and a stable `profile` such as `mobile-chromium`.
+
+- Call `primary(page, id, locator)` at the same point on each build to capture the main-frame control's viewport, visibility and center-point reachability.
+- Call `checkpoint(page, {id, state, checks})` after testing a named state. Use the same ordered IDs and boolean check keys on both builds. For a save failure, check that the draft still contains the entered text and that retry is enabled and focused. Record a `success` checkpoint too.
+- Call `save({taps, inputs, choices, landing, completions, controls})` with the observed workflow counts and the team's assessments. Run on both builds. The recorder writes no raw test trace or input values. With `screenshots: true`, use the checkpoint's `mask` option for sensitive locators. Export requires separate opt-in and copies only the verified PNG bytes.
+
+Keep your authored habit contract in proposal mode when supplying captures. The browser path uses the captured metrics and controls. A failed candidate assertion blocks the journey even when its four metric thresholds pass. Proof covers the supplied runs, named checks, and the selected viewport.
+
+```sh
+prestige habit-audit habit.json --capture before.json after.json --strict
+prestige pr app.html --root . --design DESIGN.md --journey habit.json before.json after.json
+# Use --include-journey-screenshots and a fresh --out-dir to share the approved captures.
+prestige brief PRD.md --purpose saas --components components.json
+```
+
+The PR bundle contains the metrics and links from findings to the relevant checkpoint. If included, the paired screenshots appear side by side. The component inventory maps a role to a local source identifier, its file and usage guidance. Roles include `primary_action`, `dialog`, `form_error`, `text_input`, `empty_state`, `progress`, `status_message`, and `session_prompt`. The optional `tokens` value is a workspace-relative design contract or `null`. The brief records the source hashes and includes loading, empty, error, retry, session expiry, and success guidance for the app.
+
+See [Workbench onboarding](../examples/saas-onboarding.html), its [Playwright replay](../tests/fixtures/saas-onboarding.mjs), [habit proposal](../examples/saas-habit-contract.json), and [component inventory](../examples/saas-components.json). The example tests a failed first save, draft preservation, one successful retry, and keyboard exit with focus restoration.
+
 ## Source markers
 
 Use one set of markers per component. Give each primary control an explicit `type="button"`. The empty action dock must be an authored sibling of the native header containing the marked button. Style the dock for your layout, including safe-area and keyboard behavior. Prestige moves the exact original JSX button into that dock.
