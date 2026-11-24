@@ -273,3 +273,7 @@ envelope. Run `prestige audit page.html --json` to receive one unit per design
 criterion, its score and threshold, and the unchanged overall verdict.
 [![CI](https://github.com/zrk222/code-factory-4-design/actions/workflows/ci.yaml/badge.svg)](https://github.com/zrk222/code-factory-4-design/actions/workflows/ci.yaml)
 [![PyPI](https://img.shields.io/pypi/v/code-factory-4-design.svg)](https://pypi.org/project/code-factory-4-design/)
+
+## Habit design
+
+Install the App Habit Engineer skill with `prestige install codex --skill app-habit-engineer`. Replay your app's existing Playwright tests to audit matched journeys and attach recovery findings to the design PR report. Use `prestige habit-remediate` for JSX/TSX structural repairs and `prestige brief --components` to design with the app's own components. [Commands and example](docs/HABIT_ENGINEER.md)

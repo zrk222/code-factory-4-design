@@ -146,7 +146,8 @@ def _finding(issue_id: str, category: str, severity: str, failure_class: str, ev
 
 
 def proof_report(page: Path, design: Path, *, css: Path | None = None, root: Path | None = None,
-                 changed: list[str] | None = None, render_receipt: Path | None = None) -> dict:
+                 changed: list[str] | None = None, render_receipt: Path | None = None,
+                 habit: dict | None = None) -> dict:
     page = page.resolve()
     design = design.resolve()
     root = (root or page.parent).resolve()
@@ -170,7 +171,6 @@ def proof_report(page: Path, design: Path, *, css: Path | None = None, root: Pat
                 f"Removing exercised {item['group']} token {item['token']} did not create a failing finding.",
                 value=item["token"], design=design, root=root, page=page,
             ))
-    summary = Counter(item["category"] for item in issues)
     render = None
     if render_receipt:
         try:
@@ -178,10 +178,28 @@ def proof_report(page: Path, design: Path, *, css: Path | None = None, root: Pat
         except (OSError, json.JSONDecodeError) as error:
             issues.append(_finding("P-DESIGN-RENDER-RECEIPT-001", "proof", "blocking", "invalid_render_receipt",
                                    str(error), design=design, root=root, page=page))
-    return {
+    journey = None
+    if habit:
+        journey = habit["journey"] | {
+            key: habit[key] for key in ("decision", "baseline", "candidate", "receipt_sha256")
+        }
+        for index, step in enumerate(journey["checkpoints"], 1):
+            if step["failed"]:
+                issues.append(_finding(
+                    f"P-JOURNEY-{index:03d}", "proof", "blocking", "journey_checkpoint",
+                    f"{step['id']}: {', '.join(step['failed'])}",
+                ) | {"anchor": f"journey-{step['id']}", "suggested_repair": "Replay this step and restore the expected behavior."})
+        for code in habit["findings"]:
+            if code != "JOURNEY_CHECKPOINT_FAILED":
+                issues.append(_finding(f"P-JOURNEY-{code}", "proof", "blocking",
+                                       code, "The candidate journey failed a habit threshold or user-control check."))
+    summary = Counter(item["category"] for item in issues)
+    report = {
         "schema": "prestige.proof_report.v1",
         "page": str(page), "contract": str(design), "css": str(css) if css else None,
-        "changed_files": changed or [], "passed": lint["passed"] and mutation["passed"],
+        "changed_files": changed or [], "passed": lint["passed"] and mutation["passed"] and (
+            habit is None or habit["decision"] == "PASS"
+        ),
         "verified_tokens": lint["n_passed"], "checked_tokens": lint["n_checked"],
         "lint": lint, "mutation": mutation, "render": render, "issues": issues,
         "summary": {"blocking": sum(item["severity"] == "blocking" for item in issues),
@@ -193,12 +211,41 @@ def proof_report(page: Path, design: Path, *, css: Path | None = None, root: Pat
             "Suggested repairs are reviewable recommendations, not applied patches.",
         ],
     }
+    if journey:
+        report["journey"] = journey
+    return report
+
+
+def _journey_html(journey: dict) -> str:
+    metrics = "".join(
+        f"<li>{key.upper()} {before:g} → {journey['candidate'][key]:g}</li>"
+        for key, before in journey["baseline"].items()
+    )
+    blocks = []
+    for step in journey["checkpoints"]:
+        identifier = escape(step["id"])
+        sides = []
+        for phase in ("baseline", "candidate"):
+            side = step[phase]
+            image = (side["screenshot"] or {}).get("file")
+            picture = f'<img src="{escape(image)}" alt="{phase} view of {identifier}">' if image else ""
+            checks = "".join(
+                f"<li>{escape(key)} · {'Pass' if passed else 'Fail'}</li>"
+                for key, passed in side["checks"].items()
+            )
+            sides.append(f"<div><h4>{phase.title()}</h4>{picture}<ul>{checks}</ul></div>")
+        blocks.append(f'<section id="journey-{identifier}"><h3>{identifier}</h3><p>{escape(step["state"])}</p>'
+                      f'<div class="compare">{"".join(sides)}</div></section>')
+    return f'<h2>App journey · {escape(journey["profile"])}</h2><ul>{metrics}</ul>{"".join(blocks)}'
 
 
 def _html_report(report: dict) -> str:
     rows = "".join(
-        "<tr>" + "".join(f"<td>{escape(str(item.get(key) or '-'))}</td>" for key in
-                          ("id", "category", "severity", "failure_class", "evidence", "suggested_repair")) + "</tr>"
+        "<tr><td>" + (
+            f'<a href="#{escape(item["anchor"])}">{escape(item["id"])}</a>'
+            if item.get("anchor") else escape(item["id"])
+        ) + "</td>" + "".join(f"<td>{escape(str(item.get(key) or '-'))}</td>" for key in
+                              ("category", "severity", "failure_class", "evidence", "suggested_repair")) + "</tr>"
         for item in report["issues"]
     ) or "<tr><td colspan='6'>No blocking findings.</td></tr>"
     mutation = "".join(
@@ -212,18 +259,42 @@ def _html_report(report: dict) -> str:
             for item in report["render"].get("viewports", [])
         )
     payload = escape(json.dumps(report, indent=2, sort_keys=True))
-    return f"""<!doctype html><meta charset='utf-8'><title>Prestige proof report</title>
-<style>body{{font:16px/1.5 system-ui,sans-serif;margin:32px;color:#101828;background:#f8fafc}}main{{max-width:1180px;margin:auto}}h1{{margin-bottom:0}}.status{{font-weight:700;color:{'#15803d' if report['passed'] else '#b91c1c'}}}table{{border-collapse:collapse;width:100%;background:white}}td,th{{border:1px solid #cbd5e1;padding:9px;text-align:left;vertical-align:top}}th{{background:#e2e8f0}}code{{background:#e2e8f0;padding:2px 4px}}details{{margin-top:24px}}pre{{overflow:auto;background:#0f172a;color:#e2e8f0;padding:16px}}</style>
+    journey = _journey_html(report["journey"]) if report.get("journey") else ""
+    return f"""<!doctype html><html lang='en'><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>Prestige proof report</title>
+<style>body{{font:16px/1.5 system-ui,sans-serif;margin:clamp(12px,4vw,32px);color:#101828;background:#f8fafc}}main{{max-width:1180px;margin:auto}}h1{{margin-bottom:0}}.status{{font-weight:700;color:{'#15803d' if report['passed'] else '#b91c1c'}}}.table-scroll{{overflow:auto}}table{{border-collapse:collapse;width:100%;background:white}}td,th{{border:1px solid #cbd5e1;padding:9px;text-align:left;vertical-align:top}}th{{background:#e2e8f0}}code{{background:#e2e8f0;padding:2px 4px}}details{{margin-top:24px}}pre{{overflow:auto;background:#0f172a;color:#e2e8f0;padding:16px}}.compare{{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:16px;overflow-wrap:anywhere}}img{{max-width:100%;height:auto}}section:target{{outline:2px solid #175cd3;outline-offset:6px}}</style>
 <main><h1>Prestige Design Proof</h1><p class='status'>{'PASS' if report['passed'] else 'BLOCK'} - {report['verified_tokens']}/{report['checked_tokens']} verified tokens</p>
 <h2>Decision</h2><p>Blocking: {report['summary']['blocking']} | Contract failures: {report['summary']['contract_failures']} | Proof failures: {report['summary']['proof_failures']} | Advisories: 0</p>
-<h2>Actionable findings</h2><table><thead><tr><th>ID</th><th>Category</th><th>Severity</th><th>Class</th><th>Evidence</th><th>Suggested repair</th></tr></thead><tbody>{rows}</tbody></table>
-<h2>Mutation proof</h2><ul>{mutation}</ul>{screenshots}<details><summary>Receipt JSON</summary><pre>{payload}</pre></details></main>"""
+<h2 id='findings'>Actionable findings</h2><div class='table-scroll' role='region' aria-labelledby='findings' tabindex='0'><table><thead><tr><th>ID</th><th>Category</th><th>Severity</th><th>Class</th><th>Evidence</th><th>Suggested repair</th></tr></thead><tbody>{rows}</tbody></table></div>
+<h2>Mutation proof</h2><ul>{mutation}</ul>{screenshots}{journey}<details><summary>Receipt JSON</summary><pre>{payload}</pre></details></main>"""
 
 
-def write_proof_report(report: dict, out_dir: Path) -> dict:
+def _bundle_journey(report, out_dir, assets):
+    directory = out_dir / "journey-screenshots"
+    allowed = {f"{sha}.png" for sha in assets}
+    if directory.is_symlink() or (directory.exists() and (
+        not directory.is_dir()
+        or any(item.is_symlink() or item.name not in allowed for item in directory.iterdir())
+    )):
+        raise ValueError("Choose a fresh output directory for journey proof")
+    if not assets:
+        return
+    directory.mkdir(exist_ok=True)
+    for step in report["journey"]["checkpoints"]:
+        for phase in ("baseline", "candidate"):
+            image = step[phase]["screenshot"]
+            if image:
+                sha = image["sha256"]
+                target = directory / f"{sha}.png"
+                target.write_bytes(assets[sha])
+                image["file"] = target.relative_to(out_dir).as_posix()
+
+
+def write_proof_report(report: dict, out_dir: Path, *, journey_assets=None) -> dict:
     out_dir.mkdir(parents=True, exist_ok=True)
     # Keep linked screenshots inside the exported proof bundle, not on a CI runner.
     portable_report = json.loads(json.dumps(report))
+    if portable_report.get("journey"):
+        _bundle_journey(portable_report, out_dir, journey_assets or {})
     for item in (portable_report.get("render") or {}).get("viewports", []):
         screenshot = Path(item.get("screenshot", ""))
         if screenshot.is_file():
@@ -239,11 +310,14 @@ def write_proof_report(report: dict, out_dir: Path) -> dict:
     return {"json": str(json_path), "html": str(html_path)}
 
 
-def write_pr_bundle(report: dict, out_dir: Path) -> dict:
-    paths = write_proof_report(report, out_dir)
+def write_pr_bundle(report: dict, out_dir: Path, *, journey_assets=None) -> dict:
+    paths = write_proof_report(report, out_dir, journey_assets=journey_assets)
     lines = ["## Prestige Design Check", "", f"**{'PASS' if report['passed'] else 'BLOCK'}**: {report['summary']['blocking']} blocking findings; {report['verified_tokens']} verified tokens.", ""]
     for item in report["issues"]:
-        lines.append(f"- **{item['id']}** ({item['category']}): {item['evidence']}  ")
+        label = f"**{item['id']}**"
+        if item.get("anchor"):
+            label = f"[{label}](proof-report.html#{item['anchor']})"
+        lines.append(f"- {label} ({item['category']}): {item['evidence']}  ")
         lines.append(f"  Repair: {item['suggested_repair']}")
     if not report["issues"]:
         lines.append("- No blocking contract or proof failures.")

@@ -1,0 +1,16 @@
+{
+  "schema": "prestige.component-inventory.v1",
+  "tokens": "examples/saas-DESIGN.md",
+  "components": {
+    "primary_action": {
+      "name": "PrimaryAction",
+      "source": "examples/saas-onboarding.html",
+      "usage": "Reuse the save control during first save and retry. Restore its focus after an error."
+    },
+    "form_error": {
+      "name": "FormError",
+      "source": "examples/saas-onboarding.html",
+      "usage": "Keep the existing alert in the form and preserve the user's draft."
+    }
+  }
+}

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Workbench · First project</title>
+<style>
+  body {margin: 0; background: #f6f8fc; color: #172138; font: 16px/1.6 system-ui, sans-serif}
+  main {margin: 32px auto; padding: 0 20px; max-width: 560px}
+  input, button {font: inherit; padding: 10px 14px; border-radius: 8px}
+  input {border: 1px solid #6e7e98; box-sizing: border-box; width: 100%; margin: 4px 0 12px}
+  button {background: #20479e; color: white; border: 1px solid #20479e; cursor: pointer}
+  button:focus-visible, input:focus-visible {outline: 3px solid #287586; outline-offset: 3px}
+  #error {color: #8e2323}
+  .docked {position: fixed; left: max(20px, calc((100vw - 560px) / 2)); bottom: max(16px, env(safe-area-inset-bottom))}
+</style>
+<main>
+  <h1>Your projects</h1>
+  <section id="empty"><p>Create a project to start organizing your work.</p><button id="start">Create project</button></section>
+  <form hidden>
+    <label for="project">Project name</label><input id="project" required>
+    <p id="error" role="alert" hidden>We couldn’t save this project. Try again.</p>
+    <button type="submit" id="save">Save project</button>
+  </form>
+  <section id="complete" hidden>
+    <h2 tabindex="-1">Project saved</h2>
+    <button type="button" id="done">Done</button>
+    <button type="button" id="next">Create another</button>
+  </section>
+</main>
+<script>
+  const find = selector => document.querySelector(selector);
+  const PrimaryAction = () => find('#save');
+  const FormError = () => find('#error');
+  const candidate = new URLSearchParams(location.search).get('build') === 'candidate';
+  const form = find('form');
+  const input = find('#project');
+  const showForm = () => {
+    find('#empty').hidden = find('#complete').hidden = true;
+    form.hidden = false;
+    input.focus();
+  };
+  PrimaryAction().classList.toggle('docked', candidate);
+  find('#next').hidden = !candidate;
+  find('#start').onclick = find('#next').onclick = showForm;
+  find('#done').onclick = () => {
+    find('#complete').hidden = true;
+    find('#empty').hidden = false;
+    find('#start').focus();
+  };
+  form.onsubmit = async event => {
+    event.preventDefault();
+    const action = PrimaryAction();
+    action.disabled = true;
+    const result = await fetch('/api/projects', {method: 'POST', body: input.value});
+    action.disabled = false;
+    if (!result.ok) {
+      FormError().hidden = false;
+      if (!candidate) input.value = '';
+      action.focus();
+      return;
+    }
+    FormError().hidden = form.hidden = true;
+    find('#complete').hidden = false;
+    find('#complete h2').focus();
+    input.value = '';
+  };
+</script></html>

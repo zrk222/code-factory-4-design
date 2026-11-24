@@ -166,6 +166,12 @@ def main(argv=None):
     pr.add_argument("--github-annotations", action="store_true")
     pr.add_argument("--json", action="store_true")
 
+    for output in (report, pr):
+        output.add_argument("--journey", nargs=3, metavar=("CONTRACT", "BASELINE", "CANDIDATE"),
+                            help="attach a paired journey to the existing proof bundle")
+        output.add_argument("--include-journey-screenshots", action="store_true",
+                            help="copy explicitly captured journey screenshots into the bundle")
+
     ci = sub.add_parser("ci", help="write a copy-paste GitHub or GitLab proof workflow")
     ci_sub = ci.add_subparsers(required=True, dest="ci_cmd")
     ci_init = ci_sub.add_parser("init", help="write a CI template without contacting a forge")
@@ -181,6 +187,8 @@ def main(argv=None):
     brief = sub.add_parser("brief", help="compile a purpose-driven design brief before UI work")
     brief.add_argument("source", nargs="?", default=None, help="optional PRD/spec/content file")
     brief.add_argument("--purpose", default="developer", help="developer, healthcare, fintech, luxury, marketplace, saas, editorial")
+    brief.add_argument("--components", help="workspace-relative component inventory JSON")
+    brief.add_argument("--root", default=".", help="root used to resolve the inventory and component files")
     brief.add_argument("--out", default=None, help="write markdown brief to this path")
     brief.add_argument("--json", action="store_true")
 
@@ -190,11 +198,30 @@ def main(argv=None):
     install_cmd = sub.add_parser("install", help="install the skill into an agent")
     install_cmd.add_argument("agent")
     install_cmd.add_argument("--root", default=".")
+    install_cmd.add_argument("--skill", choices=("prestige-design", "app-habit-engineer"),
+                             default="prestige-design")
+
+    habit = sub.add_parser("habit-audit", help="audit a six-step habit journey contract")
+    habit.add_argument("contract", help="workspace-relative journey JSON")
+    habit.add_argument("--root", default=".")
+    habit.add_argument("--format", choices=("json", "markdown"), default="json")
+    habit.add_argument("--strict", action="store_true", help="require observed evidence and passing metrics")
+    habit.add_argument("--capture", nargs=2, metavar=("BASELINE", "CANDIDATE"),
+                       help="read paired app test captures using a proposal contract")
+
+    repair = sub.add_parser("habit-remediate", help="preview a structural JSX or TSX habit repair")
+    repair.add_argument("source")
+    repair.add_argument("--root", default=".")
+    repair.add_argument("--apply", action="store_true")
+    repair.add_argument("--expect-sha256", help="original source hash from a reviewed preview")
 
     version = sub.add_parser("version", help="show package provenance")
     version.add_argument("--json", action="store_true")
 
     args = parser.parse_args(argv)
+
+    if args.cmd in ("habit-audit", "habit-remediate"):
+        return _run_habit(args, parser)
 
     if args.cmd == "version":
         from .provenance import provenance
@@ -319,10 +346,23 @@ def main(argv=None):
     if args.cmd in {"report", "pr"}:
         from .adoption import github_annotations, proof_report, write_pr_bundle, write_proof_report
         page = Path(args.file)
-        report = proof_report(page, Path(args.design), css=Path(args.css) if args.css else None,
-                              root=Path(args.root) if args.root else page.parent, changed=args.changed,
-                              render_receipt=Path(args.render_receipt) if args.render_receipt else None)
-        paths = write_pr_bundle(report, Path(args.out_dir)) if args.cmd == "pr" else write_proof_report(report, Path(args.out_dir))
+        root = Path(args.root) if args.root else page.parent
+        habit = None
+        assets = {} if args.include_journey_screenshots else None
+        if args.include_journey_screenshots and not args.journey:
+            parser.error("--include-journey-screenshots requires --journey")
+        try:
+            if args.journey:
+                from .habit import habit_audit
+                contract, *captures = args.journey
+                habit = habit_audit(root, contract, captures=captures, assets=assets)
+            report = proof_report(page, Path(args.design), css=Path(args.css) if args.css else None,
+                                  root=root, changed=args.changed, habit=habit,
+                                  render_receipt=Path(args.render_receipt) if args.render_receipt else None)
+            writer = write_pr_bundle if args.cmd == "pr" else write_proof_report
+            paths = writer(report, Path(args.out_dir), journey_assets=assets)
+        except (OSError, ValueError, RecursionError) as exc:
+            parser.error(str(exc))
         payload = report | {"paths": paths}
         if args.json:
             print(json.dumps(payload, indent=2))
@@ -430,7 +470,11 @@ def main(argv=None):
     if args.cmd == "brief":
         from .brief import compile_brief, render_brief
 
-        rep = compile_brief(Path(args.source) if args.source else None, purpose=args.purpose)
+        try:
+            rep = compile_brief(Path(args.source) if args.source else None, purpose=args.purpose,
+                                root=Path(args.root), components=args.components)
+        except (OSError, ValueError, RecursionError) as exc:
+            parser.error(str(exc))
         if args.json:
             print(json.dumps(rep.to_dict(), indent=2))
         else:
@@ -509,13 +553,35 @@ def main(argv=None):
     elif args.cmd == "install":
         from .adapters import install
 
-        created = install(Path(args.root), args.agent)
+        try:
+            created = install(Path(args.root), args.agent, skill=args.skill)
+        except (OSError, ValueError) as exc:
+            parser.error(str(exc))
         _print("installed skill:\n  " + "\n  ".join(str(c) for c in created))
     elif args.cmd == "scaffold":
         template = Path(__file__).resolve().parent.parent / "references" / "premium-template.html"
         dst = Path(args.out)
         dst.write_text(template.read_text(encoding="utf-8"), encoding="utf-8")
         _print(f"Wrote premium starter -> {dst}\nNext: edit, then `prestige audit {dst}`")
+
+
+def _run_habit(args, parser):
+    root = Path(args.root)
+    try:
+        if args.cmd == "habit-audit":
+            from .habit import habit_audit, habit_markdown
+            report = habit_audit(root, args.contract, captures=args.capture)
+            print(habit_markdown(report) if args.format == "markdown" else json.dumps(report, indent=2))
+            if args.strict and report["decision"] != "PASS":
+                raise SystemExit(1)
+        else:
+            from .habit_ast import habit_remediate
+            if args.apply != bool(args.expect_sha256):
+                raise ValueError("--apply and --expect-sha256 must be supplied together")
+            report = habit_remediate(root, args.source, args.expect_sha256)
+            print(json.dumps(report, indent=2))
+    except (OSError, ValueError, RecursionError) as exc:
+        parser.error(str(exc))
 
 
 if __name__ == "__main__":

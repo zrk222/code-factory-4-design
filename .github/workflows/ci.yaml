@@ -18,7 +18,7 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - run: python -m pip install --upgrade pip
-      - run: python -m pip install -e ".[dev]" pytest
+      - run: python -m pip install -e ".[dev,habit]"
       - run: python -m pytest -q
       - name: template passes its own audit
         run: prestige audit references/premium-template.html --strict
@@ -32,9 +32,15 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
-      - run: python -m pip install -e ".[render]"
+      - run: python -m pip install -e ".[dev,habit,render]"
       - run: python -m playwright install --with-deps chromium
       - run: prestige render-audit references/premium-template.html --out-dir .prestige/render
+      - run: npm install --prefix .factory/habit-js --no-save --no-audit --no-fund esbuild@0.25.12 typescript@5.9.3
+      - name: Replay structural repairs and SaaS recovery in Chromium
+        env:
+          PRESTIGE_HABIT_ESBUILD: ${{ github.workspace }}/.factory/habit-js/node_modules/esbuild
+          PRESTIGE_RUN_BROWSER_TESTS: "1"
+        run: python -m pytest -q tests/test_habit_engine.py tests/test_journey.py -k "transformed_component or journey"
       - uses: actions/upload-artifact@v4
         with:
           name: prestige-render-proof

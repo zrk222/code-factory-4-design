@@ -1,0 +1,118 @@
+{
+  "schema": "prestige.habit-contract.v1",
+  "app_name": "Vault",
+  "core_value_prop": "Log an expense and see its impact on the current budget.",
+  "lens": "habit_fintech",
+  "mode": "proposal",
+  "baseline": {
+    "taps": 3,
+    "inputs": 4,
+    "choices": 2,
+    "ctas": [
+      {
+        "id": "save-expense",
+        "width": 360,
+        "center_y": 96,
+        "height": 640,
+        "visible": true,
+        "reachable": true
+      }
+    ],
+    "landing": "choice",
+    "completions": [
+      {
+        "id": "expense-saved",
+        "can_exit": true,
+        "has_next": false,
+        "auto_advances": false,
+        "user_enabled": false
+      }
+    ]
+  },
+  "candidate": {
+    "taps": 1,
+    "inputs": 1,
+    "choices": 0,
+    "ctas": [
+      {
+        "id": "save-expense",
+        "width": 360,
+        "center_y": 566,
+        "height": 640,
+        "visible": true,
+        "reachable": true
+      }
+    ],
+    "landing": "direct",
+    "completions": [
+      {
+        "id": "expense-saved",
+        "can_exit": true,
+        "has_next": true,
+        "auto_advances": false,
+        "user_enabled": false
+      }
+    ]
+  },
+  "habit_steps": {
+    "itch": {
+      "target_emotion": "Uncertainty after a purchase",
+      "routine_trigger_schedule": "User-selected weekly budget review",
+      "notification_copy_examples": [
+        "Check how this week's purchases affect your remaining budget."
+      ]
+    },
+    "lazy_thumb": {
+      "compressed_core_action": "Open Quick Log and enter the amount",
+      "ergonomic_layout_changes": "Use the safe-area action dock",
+      "calibrated_micro_threshold": "One saved expense"
+    },
+    "paved_path": {
+      "zero_choice_landing_behavior": "Resume Quick Log from the shortcut",
+      "preselected_defaults": [
+        "Use the local date and the last user-selected category"
+      ]
+    },
+    "variable_reward": {
+      "reward_of_hunt": "Surface a useful new spending insight",
+      "reward_of_tribe": "Let the user share a goal milestone with their budget partner",
+      "reward_of_self": "Show which budget goal the user protected",
+      "variability_schedule": "Show a new insight when a verified pattern changes"
+    },
+    "continuation": {
+      "dead_end_replacements": [
+        "Recover an empty log with Quick Log",
+        "Offer Add another after Save"
+      ],
+      "continuous_loop_implementations": [
+        "Leave Done available and let people select Add another"
+      ]
+    },
+    "stored_value": {
+      "stored_value_types": [
+        "Correctable expense history",
+        "Saved categories",
+        "Progress toward a goal",
+        "Opt-in shared budgets"
+      ],
+      "reentry_value": "Restore the active budget and recent categories",
+      "data_controls": "Export CSV, edit entries, and delete history"
+    }
+  },
+  "controls": {
+    "no_deceptive_controls": true,
+    "no_predatory_rewards": true,
+    "feasible_streak": true,
+    "notification_controls": true,
+    "portable_data": true
+  },
+  "evidence": [],
+  "implementation_roadmap": [
+    {
+      "feature": "Quick Log and optional follow-on",
+      "effort": "MEDIUM",
+      "success_metric": "7-day repeat completed logs and time to first saved expense",
+      "hypothesis": "Returning to Quick Log and shortening entry increases completed logs without raising aborts or duplicate saves."
+    }
+  ]
+}

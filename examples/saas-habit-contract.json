@@ -1,0 +1,64 @@
+{
+  "schema": "prestige.habit-contract.v1",
+  "app_name": "Workbench",
+  "core_value_prop": "Create a first project and be ready to organize work.",
+  "lens": "habit_saas",
+  "mode": "proposal",
+  "baseline": {
+    "taps": 3, "inputs": 2, "choices": 0, "landing": "recommended",
+    "ctas": [{"id": "save-project", "width": 390, "height": 844, "center_y": 220, "visible": true, "reachable": true}],
+    "completions": [{"id": "project-saved", "can_exit": true, "has_next": false, "auto_advances": false, "user_enabled": false}]
+  },
+  "candidate": {
+    "taps": 3, "inputs": 1, "choices": 0, "landing": "recommended",
+    "ctas": [{"id": "save-project", "width": 390, "height": 844, "center_y": 800, "visible": true, "reachable": true}],
+    "completions": [{"id": "project-saved", "can_exit": true, "has_next": true, "auto_advances": false, "user_enabled": false}]
+  },
+  "habit_steps": {
+    "itch": {
+      "target_emotion": "I need a place to start organizing this work.",
+      "routine_trigger_schedule": "Show the empty-state action when the user opens a workspace without projects.",
+      "notification_copy_examples": ["Your workspace is ready when you are."]
+    },
+    "lazy_thumb": {
+      "compressed_core_action": "Name a project and save it.",
+      "ergonomic_layout_changes": "Keep Save project within reach on small screens.",
+      "calibrated_micro_threshold": "Start with one required field."
+    },
+    "paved_path": {
+      "zero_choice_landing_behavior": "Offer Create project as the single first action.",
+      "preselected_defaults": ["No template selection before the first save."]
+    },
+    "variable_reward": {
+      "reward_of_hunt": "Show a relevant next task when the project is ready.",
+      "reward_of_tribe": "Offer sharing after the user chooses to collaborate.",
+      "reward_of_self": "Confirm the first saved project.",
+      "variability_schedule": "Vary suggestions by real project activity."
+    },
+    "continuation": {
+      "dead_end_replacements": ["Done returns to a usable starting point. Create another stays available."],
+      "continuous_loop_implementations": ["Keep the next project action optional after save."]
+    },
+    "stored_value": {
+      "stored_value_types": ["Project data and saved work"],
+      "reentry_value": "Resume with the project and its existing work visible.",
+      "data_controls": "Use the product's project export and delete controls."
+    }
+  },
+  "controls": {
+    "no_deceptive_controls": true,
+    "no_predatory_rewards": true,
+    "feasible_streak": true,
+    "notification_controls": true,
+    "portable_data": true
+  },
+  "evidence": [],
+  "implementation_roadmap": [
+    {
+      "feature": "Preserve the draft during save failures",
+      "effort": "LOW",
+      "success_metric": "First saves completed after a recoverable error",
+      "hypothesis": "Keeping the project name reduces rework during retries."
+    }
+  ]
+}
